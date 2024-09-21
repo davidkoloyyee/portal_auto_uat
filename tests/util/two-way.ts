@@ -1,4 +1,4 @@
-import { EDnf } from "./data-field-names.js";
+import { EDfn } from "./enums.js";
 import {
   checkByDfn,
   emailPwCreate,
@@ -59,9 +59,9 @@ export default class TwoWayPortal {
    *   1    |   y       |   n       |   n    |          |                |           |            |           |
    */
   async test1() {
-    await checkByDfn(this.#page, EDnf.anon, true);
-    await checkByDfn(this.#page, EDnf.returning, false);
-    await checkByDfn(this.#page, EDnf.update, false);
+    await checkByDfn(this.#page, EDfn.anon, true);
+    await checkByDfn(this.#page, EDfn.returning, false);
+    await checkByDfn(this.#page, EDfn.update, false);
   }
 
   /**
@@ -70,11 +70,11 @@ export default class TwoWayPortal {
    */
   async test2() {
     // this.#page = await handleTC(this.#page, this.#url);
-    await checkByDfn(this.#page, EDnf.anon, true);
-    await checkByDfn(this.#page, EDnf.returning, false);
-    await checkByDfn(this.#page, EDnf.update, true);
+    await checkByDfn(this.#page, EDfn.anon, true);
+    await checkByDfn(this.#page, EDfn.returning, false);
+    await checkByDfn(this.#page, EDfn.update, true);
     // select create with username
-    await checkByDfn(this.#page, EDnf.provideEmail, false);
+    await checkByDfn(this.#page, EDfn.provideEmail, false);
 
     await usernamePwCreate(this.#page, this.#username, this.#password);
   }
@@ -83,13 +83,13 @@ export default class TwoWayPortal {
    *   3    |   y       |   n       |   y    |          |test@example.com| Test1@#$%^ |            |           |
    */
   async test3() {
-    await checkByDfn(this.#page, EDnf.anon, true);
-    await checkByDfn(this.#page, EDnf.returning, false);
+    await checkByDfn(this.#page, EDfn.anon, true);
+    await checkByDfn(this.#page, EDfn.returning, false);
     // create with email and password
-    await checkByDfn(this.#page, EDnf.update, true);
+    await checkByDfn(this.#page, EDfn.update, true);
     await emailPwCreate(
       this.#page,
-      EDnf.provideEmail,
+      EDfn.provideEmail,
       this.#email,
       this.#password
     );
@@ -102,11 +102,11 @@ export default class TwoWayPortal {
    *   4    |   y       |   y       |        |  test2   |                | Test1@#$%^ |            |           |
    */
   async test4() {
-    await checkByDfn(this.#page, EDnf.anon, true);
-    await checkByDfn(this.#page, EDnf.returning, true);
+    await checkByDfn(this.#page, EDfn.anon, true);
+    await checkByDfn(this.#page, EDfn.returning, true);
     await fillReturnUser(
       this.#page,
-      EDnf.loginUsernameEmail,
+      EDfn.loginUsernameEmail,
       this.#username,
       this.#password
     );
@@ -121,9 +121,9 @@ export default class TwoWayPortal {
    *   5    |   n       |   n       |   n    |          |                |            | test5      |  test5    |
    */
   async test5() {
-    await checkByDfn(this.#page, EDnf.anon, false);
-    await checkByDfn(this.#page, EDnf.returning, false);
-    await checkByDfn(this.#page, EDnf.update, false);
+    await checkByDfn(this.#page, EDfn.anon, false);
+    await checkByDfn(this.#page, EDfn.returning, false);
+    await checkByDfn(this.#page, EDfn.update, false);
     await fillFirstLastName(this.#page, this.#username, this.#username);
 
   }
@@ -134,9 +134,9 @@ export default class TwoWayPortal {
    * | 6     |   n       |   n       |   y    |          |test@example.com| Test1@#$%^ | test6      | test6     |
    */
   async test6() {
-    await checkByDfn(this.#page, EDnf.anon, false);
-    await checkByDfn(this.#page, EDnf.returning, false);
-    await checkByDfn(this.#page, EDnf.update, true);
+    await checkByDfn(this.#page, EDfn.anon, false);
+    await checkByDfn(this.#page, EDfn.returning, false);
+    await checkByDfn(this.#page, EDfn.update, true);
 
     await fillFirstLastName(this.#page, this.#username, this.#username);
     await fillEmailPW(this.#page, this.#email, this.#password);

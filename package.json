@@ -4,17 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "pnpm exec playwright test",
-    "testc": "pnpm exec playwright test --project=chromium",
-    "testff": "pnpm exec playwright test --project=firefox",
-    "testkit": "pnpm exec playwright test --project=webkit",
-    "test-report": "pnpm exec playwright show-report"
+    "cy:open": "cypress open"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@playwright/test": "^1.47.0",
-    "@types/node": "^22.5.4"
+    "@types/node": "^22.5.4",
+    "cypress": "^13.14.2",
+    "typescript": "^5.6.2"
   }
 }

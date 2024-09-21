@@ -7,7 +7,7 @@
  */
 
 import { Page } from "@playwright/test";
-import { EDnf } from "./data-field-names";
+import { EDnf, EInputNames } from "./enums";
 
 /**
  * @param {boolean}  yesOrNo - the html attribute "value=['yes' or 'no']" true is "yes", false is "no";
@@ -114,9 +114,9 @@ async function emailPwCreate(page, dnf, email, password) {
 
 async function fillEmailPW(page, email, password) {
 
-  await fillInput(page, "id*='portalUserEmail'", email, 1);
-  await fillInput(page, "name='portalUserNewPassword'", password);
-  await fillInput(page, "name='portalUserConfirmedPassword'", password);
+  await fillInput(page, EInputNames.idEmailWild, email, 1);
+  await fillInput(page, EInputNames.password, password);
+  await fillInput(page, EInputNames.confirmPassword, password);
 }
 
 /**
@@ -127,9 +127,9 @@ async function fillEmailPW(page, email, password) {
  * @param {string} password
  */
 async function usernamePwCreate(page, username, password) {
-  await fillInput(page, "name='portalUserUsername'", username);
-  await fillInput(page, "name='portalUserNewPassword'", password);
-  await fillInput(page, "name='portalUserConfirmedPassword'", password);
+  await fillInput(page, EInputNames.username, username);
+  await fillInput(page, EInputNames.password, password);
+  await fillInput(page, EInputNames.confirmPassword, password);
 }
 
 /**
