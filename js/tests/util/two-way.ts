@@ -65,7 +65,7 @@ export default class TwoWayPortal {
     await checkByDfn(this.#page, EDfn.returning, false);
 
     const provideEmail = await this.#page.locator(`div[data-field-name='${EDfn.provideEmail}']`);
-    await provideEmail.click();
+    // await provideEmail.click();
     const provideEmailExists = await provideEmail.isVisible();
     console.log(provideEmailExists);
     if (provideEmailExists) {
