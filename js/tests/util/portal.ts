@@ -6,7 +6,7 @@
  *
  */
 
-import { Page } from "@playwright/test";
+import { Page, TestInfo } from "@playwright/test";
 import { EInputNames } from "./enums";
 
 /**
@@ -143,12 +143,11 @@ export async function fillReturnUser({ page, dnf, username, password }: FillRetu
  * @param {string} lastName 
  */
 interface FillFirstLastNameParams {
-  page: Page;
   firstName: string;
   lastName: string;
 }
 
-export async function fillFirstLastName({ page, firstName, lastName }: FillFirstLastNameParams) {
+export async function fillFirstLastName( page: Page, { firstName, lastName }: FillFirstLastNameParams) {
 
   await page.waitForSelector("input[name='firstName']");
 
@@ -190,9 +189,40 @@ interface HandleTCParams {
   url: string;
 }
 
-export async function handleTC( page, url : {page: Page, url : string}): Promise<Page> {
+export async function handleTC(page: Page, url: string): Promise<Page> {
   await page.goto(url);
   await page.getByRole("link", { name: "Report Online" }).click();
   await page.getByRole("button", { name: "Accept" }).click();
   return page;
+}
+
+export async function handleSubmit(page: Page) {
+
+  await submit(page);
+  await confirmSubmit(page); // comment out to avoid excessive submission
+
+  // capture the message
+  const message = await captureSubmitMessage(page);
+  // console.log(message); // this should be recorded somewhere.
+  await page.close();
+  console.log(message)
+  // return message;
+}
+
+export async function screenshotOnFailed(page:Page, testInfo: TestInfo) {
+  console.log(testInfo.status);
+  console.log(testInfo.expectedStatus);
+  if (testInfo.status !== testInfo.expectedStatus) {
+
+    const path = testInfo.outputPath(`test-failed.png`)
+    console.log(testInfo.column);
+    const body = await page.screenshot({ path: path, timeout: 500 });
+    testInfo.attachments.push({ name: "test failed.", path: path, contentType: "image/png", body });
+  }
+};
+
+export async function handleCal(page: Page) {
+  const cal = await page.locator(EInputNames.calendarDMY).all();
+ cal.forEach( async (c) => console.log(await c.getAttribute("aria-label"))) 
+  
 }

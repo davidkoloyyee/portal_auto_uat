@@ -4,7 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "cy:open": "cypress open"
+    "start": "ts-node ./src/main.ts",
+    "cy:open": "cypress open",
+    "pw" : "URL=$URL \n npx playwright test tests/portal/portal.spec.ts",
+    "url" : "URL=$URL \n echo URL=$URL"
   },
   "keywords": [],
   "author": "",

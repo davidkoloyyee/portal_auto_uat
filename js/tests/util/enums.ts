@@ -21,4 +21,6 @@ export const EInputNames = Object.freeze({
   idEmailWild: "id*='portalUserEmail'",
   returnUsername: "name='username'",
   returnPwWild: "id*='portalLoginPassword'",
+  calendarDMY: "input[placeholder='DD-MMM-YYYY']",
+  datepicker: "input[name*='date']",
 });
