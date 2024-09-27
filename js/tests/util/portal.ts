@@ -120,19 +120,18 @@ export async function usernamePwCreate(page: Page, username: string, password: s
  * @param {string} password
  */
 interface FillReturnUserParams {
-  page: Page;
   dnf: string;
   username: string;
   password: string;
 }
 
-export async function fillReturnUser({ page, dnf, username, password }: FillReturnUserParams) {
+export async function fillReturnUser( page: Page, {dnf, username, password }: FillReturnUserParams) {
 
   await page.waitForSelector(`[data-field='${dnf}']`);
   // await page.waitForTimeout(1000);
   console.log({ password });
-  await fillInput({ page, cssSelector: "name='username'", value: "test@email.com" });
-  await fillInput({ page, cssSelector: "id*='portalLoginPassword'", value: password });
+  await fillInput({ page, cssSelector: EInputNames.returnUsername , value: "test@email.com" });
+  await fillInput({ page, cssSelector: EInputNames.returnPwWild, value: password });
 }
 
 
