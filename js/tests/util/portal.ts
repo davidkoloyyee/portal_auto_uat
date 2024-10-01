@@ -227,7 +227,7 @@ export async function handleSubmit(page: Page) {
 }
 
 /**
- * TODO: Portal add party
+ * Portal add party
  */
 export async function addParty(page: Page) {
   const btn = page.locator("button[data-display-rule='displayParty']");
@@ -253,22 +253,14 @@ export async function addParty(page: Page) {
       }
     }
 
-    // TODO: text input.
     for (const txtInput of await modal.locator("input[type='text']").all()) {
       const className = await txtInput.getAttribute("class");
       if (className === "form-control" && await txtInput.isVisible()) {
         console.log(await txtInput.getAttribute("name"))
         await txtInput.click();
-        // await page.keyboard.type("test@example.com");
         await txtInput.fill("test@example.com");
         await page.keyboard.press("Tab");
       }
-      // else if (await modal.locator("[id*='emailAddress']")) {
-
-      //   await txtInput.fill("test@example.com");
-      //   await page.keyboard.press("Tab");
-      // }
-
     }
     // for (const cb of await modal.locator("[id*='emailAddress']").all()) {
       const cb = await modal.locator("[id*='emailAddress']").first();
@@ -281,8 +273,19 @@ export async function addParty(page: Page) {
     // }
     await page.getByRole("button", { name: "Save" }).click();
   }
-
 }
+
+
+export async function addFile(page: Page) {
+  await page.getByRole("button", { name : "Add File"}).click({clickCount : 10});
+
+  const modal = page.locator("div[id='attachment-modal']");
+  await modal.click({ clickCount: 10 });
+  if (await modal.isVisible()) {
+      console.log(modal.allTextContents())
+  }
+}
+
 
 /**
  * Helper function but it is replaced by playwright.config.ts > use: {screenshot: 'only-on-failure'}

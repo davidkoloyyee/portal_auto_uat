@@ -2,7 +2,7 @@
 
 import { test } from "@playwright/test";
 import { env } from "node:process";
-import { addParty, fillEmailPW, fillFirstLastName, fillReturnUser, handleSubmit, handleTC } from "../util/portal";
+import { addFile, addParty, fillEmailPW, fillFirstLastName, fillReturnUser, handleSubmit, handleTC } from "../util/portal";
 
 import { EDfn } from "../util/enums";
 import {
@@ -60,7 +60,7 @@ test.describe(` 2-Way Portal Reporter Test`, () => {
   let password = "Test1@$%^";
 
   // const twoway = TwoWayFn(url);
-
+  
   test.beforeEach(async ({ page }) => {
     if (url.includes("reportonline")) {
       url = url.replace("/reportonline", "");
@@ -236,6 +236,10 @@ test.describe(` 2-Way Portal Reporter Test`, () => {
 
   test("Add Party", async ({page })=>{
    await addParty(page);
+  });
+
+  test("Add File", async ({page })=>{
+   await addFile(page);
   });
 
 

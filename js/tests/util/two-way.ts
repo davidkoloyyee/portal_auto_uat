@@ -7,6 +7,8 @@ import {
   fillEmailPW,
   fillFirstLastName,
   fillReturnUser,
+  handleSubmit,
+  handleTC,
   usernamePwCreate
 } from "./portal";
 /**
@@ -110,10 +112,10 @@ export function TwoWayFn(url: string) {
     await fillReturnUser(
       page,
       {
-      dnf: EDfn.loginUsernameEmail,
-      username: username,
-      password: password
-    }
+        dnf: EDfn.loginUsernameEmail,
+        username: username,
+        password: password
+      }
     );
 
     // sign in
@@ -129,7 +131,7 @@ export function TwoWayFn(url: string) {
     await checkByDfn(page, EDfn.anon, false);
     await checkByDfn(page, EDfn.returning, false);
     await checkByDfn(page, EDfn.update, false);
-    await fillFirstLastName({ page: page, firstName: username, lastName: username });
+    await fillFirstLastName(page, { firstName: username, lastName: username });
 
   }
 
@@ -143,7 +145,7 @@ export function TwoWayFn(url: string) {
     await checkByDfn(page, EDfn.returning, false);
     await checkByDfn(page, EDfn.update, true);
 
-    await fillFirstLastName({ page: page, firstName: username, lastName: username });
+    await fillFirstLastName(page, { firstName: username, lastName: username });
     await fillEmailPW(page, email, password);
   }
 
@@ -164,7 +166,7 @@ export class TwoWayPortal {
    * @param {import("@playwright/test").Page} page
    * @param {String} url
    */
-  constructor(page, url) {
+  constructor(page: Page, url: string) {
     this.#page = page;
     this.#url = url;
 
@@ -178,6 +180,37 @@ export class TwoWayPortal {
     this.#username = testerName;
 
     this.#password = "Test1@#$%^";
+  }
+
+  async pretest() {
+    if (this.#url.includes("reportonline")) {
+      this.#url = this.#url.replace("/reportonline", "");
+    }
+    // added special required fields here.
+    await handleTC(this.#page, this.#url);
+
+    for (let tb of await this.#page.getByRole("textbox").all()) {
+      await tb.fill(new Date() + " " + this.#url);
+    }
+
+    for (const select of await this.#page.locator("select").all()) {
+      if (await select.isVisible()) {
+        select.selectOption({ index: 1 })
+      }
+    }
+
+    for (const textInput of await this.#page.locator("input[type='text']").all()) {
+      if (await textInput.isVisible()) {
+        textInput.fill(new Date() + " " + this.#url)
+      }
+    }
+
+    for (const select of await this.#page.locator("dialog").all()) {
+      console.log("I shouldn't see this. ")
+      if (await select.isVisible()) {
+        select.selectOption({ index: 1 })
+      }
+    }
   }
 
   /**
@@ -244,10 +277,10 @@ export class TwoWayPortal {
     await fillReturnUser(
       this.#page,
       {
-      dnf: EDfn.loginUsernameEmail,
-      username: this.#username,
-      password: this.#password
-    }
+        dnf: EDfn.loginUsernameEmail,
+        username: this.#username,
+        password: this.#password
+      }
     );
 
     // sign in
@@ -263,7 +296,7 @@ export class TwoWayPortal {
     await checkByDfn(this.#page, EDfn.anon, false);
     await checkByDfn(this.#page, EDfn.returning, false);
     await checkByDfn(this.#page, EDfn.update, false);
-    await fillFirstLastName({ page: this.#page, firstName: this.#username, lastName: this.#username });
+    await fillFirstLastName(this.#page, { firstName: this.#username, lastName: this.#username });
 
   }
 
@@ -277,7 +310,22 @@ export class TwoWayPortal {
     await checkByDfn(this.#page, EDfn.returning, false);
     await checkByDfn(this.#page, EDfn.update, true);
 
-    await fillFirstLastName({ page: this.#page, firstName: this.#username, lastName: this.#username });
+    await fillFirstLastName(this.#page, { firstName: this.#username, lastName: this.#username });
     await fillEmailPW(this.#page, this.#email, this.#password);
   }
+
+  async test7() {
+
+    await checkByDfn(this.#page, EDfn.anon, false);
+    await checkByDfn(this.#page, EDfn.returning, true);
+
+    await fillFirstLastName(this.#page, { firstName: this.#username, lastName: this.#username });
+    await fillReturnUser(this.#page, { dnf: EDfn.loginUsernameEmail, username: this.#email, password: this.#password })
+  }
+
+  
+  async submit() {
+    await handleSubmit(this.#page);
+  }
 }
+
