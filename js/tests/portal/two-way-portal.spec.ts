@@ -2,7 +2,7 @@
 
 import { test } from "@playwright/test";
 import { env } from "node:process";
-import { fillEmailPW, fillFirstLastName, fillReturnUser, handleSubmit, handleTC } from "../util/portal";
+import { addParty, fillEmailPW, fillFirstLastName, fillReturnUser, handleSubmit, handleTC } from "../util/portal";
 
 import { EDfn } from "../util/enums";
 import {
@@ -173,10 +173,9 @@ test.describe(` 2-Way Portal Reporter Test`, () => {
   test("T4: A=Y R=Y ", async ({ page }) => {
     await checkByDfn(page, EDfn.anon, true);
     await checkByDfn(page, EDfn.returning, true);
-    await fillReturnUser({
-      page: page,
+    await fillReturnUser(page, {
       dnf: EDfn.loginUsernameEmail,
-      username: username,
+      username: email,
       password: password
     }
     );
@@ -213,9 +212,6 @@ test.describe(` 2-Way Portal Reporter Test`, () => {
    * | 6     |   n       |   n       |   y    |          |test@example.com| Test1@$%^ | test6      | test6     |
    */
   test("T6: A=N R=N U=Y", async ({ page }) => {
-    // let twp = new TwoWayPortal(page, url);
-    // await twp.test6();
-    // await handleSubmit(page);
     await checkByDfn(page, EDfn.anon, false);
     await checkByDfn(page, EDfn.returning, false);
     await checkByDfn(page, EDfn.update, true);
@@ -233,10 +229,15 @@ test.describe(` 2-Way Portal Reporter Test`, () => {
     await checkByDfn(page, EDfn.anon, false);
     await checkByDfn(page, EDfn.returning, true);
 
-    await fillFirstLastName(page, {firstName : username , lastName: username});
-    await fillReturnUser(page, {dnf : EDfn.loginUsernameEmail, username, password} )
+    await fillFirstLastName(page, { firstName: username, lastName: username });
+    await fillReturnUser(page, { dnf: EDfn.loginUsernameEmail, username: email, password })
     await handleSubmit(page);
   })
+
+  test("Add Party", async ({page })=>{
+   await addParty(page);
+  });
+
 
   test.afterEach(async ({ page }, testInfo) => {
     // await screenshotOnFailed(page, testInfo);

@@ -125,12 +125,12 @@ interface FillReturnUserParams {
   password: string;
 }
 
-export async function fillReturnUser( page: Page, {dnf, username, password }: FillReturnUserParams) {
+export async function fillReturnUser(page: Page, { dnf, username, password }: FillReturnUserParams) {
 
   await page.waitForSelector(`[data-field='${dnf}']`);
   // await page.waitForTimeout(1000);
   console.log({ password });
-  await fillInput({ page, cssSelector: EInputNames.returnUsername , value: "test@email.com" });
+  await fillInput({ page, cssSelector: EInputNames.returnUsername, value: username });
   await fillInput({ page, cssSelector: EInputNames.returnPwWild, value: password });
 }
 
@@ -146,7 +146,7 @@ interface FillFirstLastNameParams {
   lastName: string;
 }
 
-export async function fillFirstLastName( page: Page, { firstName, lastName }: FillFirstLastNameParams) {
+export async function fillFirstLastName(page: Page, { firstName, lastName }: FillFirstLastNameParams) {
 
   await page.waitForSelector("input[name='firstName']");
 
@@ -171,6 +171,14 @@ interface FillInputParams {
   index?: number;
 }
 
+/**
+ * Shorthand function for finding input by css attribute. e.g: name=xxx data-field-name=xxx
+ * @param {import("@playwright/test").Page} page
+ * @param {string} cssSelector - it has a placeholder of `input[${cssSelector}]` therefore the argument should the css selector only e.g. "id*='portalUserEmail'" (for wildcard search) or "name='portalUserNewPassword'" (for exact search)
+ * @param {string} value - keyboard typing value.
+ * @param {number} index - nth child index, start with 0, if there is only 1 target put 0 as argument.
+ * @returns {import("@playwright/test").Page}
+ */
 export async function fillInput({ page, cssSelector, value, index = 0 }: FillInputParams): Promise<void> {
 
   await page.locator(`input[${cssSelector}]`).nth(index).click();
@@ -187,7 +195,12 @@ interface HandleTCParams {
   page: Page;
   url: string;
 }
-
+/**
+ * Handle v9^ T&C Modal. 
+ * @param page - Playwright Page object.
+ * @param url - Client's UAT test link.
+ * @returns 
+ */
 export async function handleTC(page: Page, url: string): Promise<Page> {
   await page.goto(url);
   await page.getByRole("link", { name: "Report Online" }).click();
@@ -195,6 +208,11 @@ export async function handleTC(page: Page, url: string): Promise<Page> {
   return page;
 }
 
+/**
+ * 
+ * Handle Confirm Submit modal
+ * @param {import('@playwright/test').Page} page - playwright Page, everything about interact with the webpage.
+ */
 export async function handleSubmit(page: Page) {
 
   await submit(page);
@@ -208,7 +226,70 @@ export async function handleSubmit(page: Page) {
   // return message;
 }
 
-export async function screenshotOnFailed(page:Page, testInfo: TestInfo) {
+/**
+ * TODO: Portal add party
+ */
+export async function addParty(page: Page) {
+  const btn = page.locator("button[data-display-rule='displayParty']");
+  await btn.click({ clickCount: 10, timeout: 3000 })
+
+  const modal = page.locator("div[id='party-modal']");
+  await modal.click({ clickCount: 10 });
+  if (await modal.isVisible()) {
+    const radios = modal.getByRole("radio");
+    // console.log(await radios.first().inputValue());
+    console.log(await (await radios.all()).every(async el => await el.isChecked()));
+    // if (!await radios.first().isChecked()) {
+    //   radios.first().check()
+    // }
+
+    for (const select of await modal.locator("select").all()) {
+      if (await select.isVisible()) {
+        while ((await select.inputValue()) === "") {
+          const options = await select.locator("option").all();
+          let rand = Math.floor(Math.random() * (options.length - 1)) + 1;
+          await select.selectOption({ index: rand });
+        }
+      }
+    }
+
+    // TODO: text input.
+    for (const txtInput of await modal.locator("input[type='text']").all()) {
+      const className = await txtInput.getAttribute("class");
+      if (className === "form-control" && await txtInput.isVisible()) {
+        console.log(await txtInput.getAttribute("name"))
+        await txtInput.click();
+        // await page.keyboard.type("test@example.com");
+        await txtInput.fill("test@example.com");
+        await page.keyboard.press("Tab");
+      }
+      // else if (await modal.locator("[id*='emailAddress']")) {
+
+      //   await txtInput.fill("test@example.com");
+      //   await page.keyboard.press("Tab");
+      // }
+
+    }
+    // for (const cb of await modal.locator("[id*='emailAddress']").all()) {
+      const cb = await modal.locator("[id*='emailAddress']").first();
+      if (await cb.isVisible()) {
+        await cb.click();
+        // await page.keyboard.type("test@example.com");
+        await cb.fill("test@example.com");
+        await page.keyboard.press("Tab");
+      }
+    // }
+    await page.getByRole("button", { name: "Save" }).click();
+  }
+
+}
+
+/**
+ * Helper function but it is replaced by playwright.config.ts > use: {screenshot: 'only-on-failure'}
+ * @param {Page} page - Playwright Page Object
+ * @param {TestInfo} testInfo  - Playwright TestInfo Object
+ */
+export async function screenshotOnFailed(page: Page, testInfo: TestInfo) {
   console.log(testInfo.status);
   console.log(testInfo.expectedStatus);
   if (testInfo.status !== testInfo.expectedStatus) {
@@ -222,6 +303,6 @@ export async function screenshotOnFailed(page:Page, testInfo: TestInfo) {
 
 export async function handleCal(page: Page) {
   const cal = await page.locator(EInputNames.calendarDMY).all();
- cal.forEach( async (c) => console.log(await c.getAttribute("aria-label"))) 
-  
+  cal.forEach(async (c) => console.log(await c.getAttribute("aria-label")))
+
 }
