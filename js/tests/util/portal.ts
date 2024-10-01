@@ -7,6 +7,7 @@
  */
 
 import { Page, TestInfo } from "@playwright/test";
+import { path } from "node:path";
 import { EInputNames } from "./enums";
 
 /**
@@ -263,13 +264,13 @@ export async function addParty(page: Page) {
       }
     }
     // for (const cb of await modal.locator("[id*='emailAddress']").all()) {
-      const cb = await modal.locator("[id*='emailAddress']").first();
-      if (await cb.isVisible()) {
-        await cb.click();
-        // await page.keyboard.type("test@example.com");
-        await cb.fill("test@example.com");
-        await page.keyboard.press("Tab");
-      }
+    const cb = await modal.locator("[id*='emailAddress']").first();
+    if (await cb.isVisible()) {
+      await cb.click();
+      // await page.keyboard.type("test@example.com");
+      await cb.fill("test@example.com");
+      await page.keyboard.press("Tab");
+    }
     // }
     await page.getByRole("button", { name: "Save" }).click();
   }
@@ -277,12 +278,16 @@ export async function addParty(page: Page) {
 
 
 export async function addFile(page: Page) {
-  await page.getByRole("button", { name : "Add File"}).click({clickCount : 10});
+  await page.getByRole("button", { name: "Add File" }).click({ clickCount: 10 });
 
   const modal = page.locator("div[id='attachment-modal']");
   await modal.click({ clickCount: 10 });
   if (await modal.isVisible()) {
-      console.log(modal.allTextContents())
+    console.log(modal.allTextContents())
+    const fileChooserPromise = page.waitForEvent('filechooser');
+    await page.getByText('Upload file').click();
+    const fileChooser = await fileChooserPromise;
+    await fileChooser.setFiles(path.join(__dirname, 'myfile.pdf'));
   }
 }
 
