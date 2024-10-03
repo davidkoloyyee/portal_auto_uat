@@ -7,7 +7,8 @@
  */
 
 import { Page, TestInfo } from "@playwright/test";
-import { path } from "node:path";
+import * as path from "node:path";
+import * as process from "node:process";
 import { EInputNames } from "./enums";
 
 /**
@@ -135,6 +136,18 @@ export async function fillReturnUser(page: Page, { dnf, username, password }: Fi
   await fillInput({ page, cssSelector: EInputNames.returnPwWild, value: password });
 }
 
+interface FillLoginUserParams {
+  page: Page;
+  username: string;
+  password: string;
+}
+
+export async function fillLoginUser(page, { username, password }: FillLoginUserParams) {
+
+  await fillInput({ page, cssSelector: EInputNames.loginUsername, value: username });
+  await fillInput({ page, cssSelector: EInputNames.loginPassword, value: password });
+}
+
 
 /**
  * 
@@ -230,31 +243,75 @@ export async function handleSubmit(page: Page) {
 /**
  * Portal add party
  */
-export async function addParty(page: Page) {
-  const btn = page.locator("button[data-display-rule='displayParty']");
+export async function addParty(page: Page, {isPortal = true}) : Promise<number> {
+  const btn = page.locator("button[data-display-rule*='displayParty']");
   await btn.click({ clickCount: 10, timeout: 3000 })
 
-  const modal = page.locator("div[id='party-modal']");
-  await modal.click({ clickCount: 10 });
-  if (await modal.isVisible()) {
-    const radios = modal.getByRole("radio");
+  let rowCount = 0;
+
+
+  if (isPortal) {
+    const modal = page.locator("div[id='party-modal']");
+    await modal.click({ clickCount: 10 });
+    if (await modal.isVisible()) {
+      const radios = modal.getByRole("radio");
+      // console.log(await radios.first().inputValue());
+      console.log(await (await radios.all()).every(async el => await el.isChecked()));
+      // if (!await radios.first().isChecked()) {
+      //   radios.first().check()
+      // }
+
+      for (const select of await modal.locator("select").all()) {
+        if (await select.isVisible()) {
+          while ((await select.inputValue()) === "") {
+            const options = await select.locator("option").all();
+            let rand = Math.floor(Math.random() * (options.length - 1)) + 1;
+            await select.selectOption({ index: rand });
+          }
+        }
+      }
+
+      for (const txtInput of await modal.locator("input[type='text']").all()) {
+        const className = await txtInput.getAttribute("class");
+        if (className === "form-control" && await txtInput.isVisible()) {
+          console.log(await txtInput.getAttribute("name"))
+          await txtInput.click();
+          await txtInput.fill("test@example.com");
+          await page.keyboard.press("Tab");
+        }
+      }
+      // for (const cb of await modal.locator("[id*='emailAddress']").all()) {
+      const cb = await modal.locator("[id*='emailAddress']").first();
+      if (await cb.isVisible()) {
+        await cb.click();
+        // await page.keyboard.type("test@example.com");
+        await cb.fill("test@example.com");
+        await page.keyboard.press("Tab");
+      }
+      // }
+      await page.getByRole("button", { name: "Save" }).click();
+      
+    }
+  } else {
+    console.log(page.url())
+    const radios = page.getByRole("radio");
     // console.log(await radios.first().inputValue());
-    console.log(await (await radios.all()).every(async el => await el.isChecked()));
+    // console.log(await (await radios.all()).every(async el => await el.isChecked()));
     // if (!await radios.first().isChecked()) {
     //   radios.first().check()
     // }
 
-    for (const select of await modal.locator("select").all()) {
-      if (await select.isVisible()) {
+    console.log(await page.locator("select").first().click());
+    for (const select of await page.locator("select").all()) {
+      console.log(await select.allInnerTexts());
         while ((await select.inputValue()) === "") {
           const options = await select.locator("option").all();
           let rand = Math.floor(Math.random() * (options.length - 1)) + 1;
           await select.selectOption({ index: rand });
-        }
       }
     }
 
-    for (const txtInput of await modal.locator("input[type='text']").all()) {
+    for (const txtInput of await page.locator("input[type='text']").all()) {
       const className = await txtInput.getAttribute("class");
       if (className === "form-control" && await txtInput.isVisible()) {
         console.log(await txtInput.getAttribute("name"))
@@ -264,30 +321,38 @@ export async function addParty(page: Page) {
       }
     }
     // for (const cb of await modal.locator("[id*='emailAddress']").all()) {
-    const cb = await modal.locator("[id*='emailAddress']").first();
+    const cb = await page.locator("[id*='emailAddress']").first();
     if (await cb.isVisible()) {
       await cb.click();
-      // await page.keyboard.type("test@example.com");
       await cb.fill("test@example.com");
       await page.keyboard.press("Tab");
     }
-    // }
-    await page.getByRole("button", { name: "Save" }).click();
+    await page.locator("button#save").click();
+    await page.locator("button#confirm").click();
+    
+    // need to return the number of trs
+    await page.getByRole("table").click();
+    rowCount = (await page.locator("tr").all()).length;
   }
+  return rowCount;
 }
 
-
+/**
+ * TODO: upload file. 
+ * @param page 
+ */
 export async function addFile(page: Page) {
   await page.getByRole("button", { name: "Add File" }).click({ clickCount: 10 });
 
   const modal = page.locator("div[id='attachment-modal']");
   await modal.click({ clickCount: 10 });
   if (await modal.isVisible()) {
-    console.log(modal.allTextContents())
+    const fileDir = path.join(process.cwd(), 'tests');
     const fileChooserPromise = page.waitForEvent('filechooser');
-    await page.getByText('Upload file').click();
+    await page.locator("label[id='manual-attachment-button']").click();
     const fileChooser = await fileChooserPromise;
-    await fileChooser.setFiles(path.join(__dirname, 'myfile.pdf'));
+    await fileChooser.setFiles(path.join(fileDir, 'files', 'ft-82.jpg'),);
+    await page.getByRole("button", { name: "Save" }).click();
   }
 }
 

@@ -1,8 +1,7 @@
 "use strict";
 
 import { test as base } from "@playwright/test";
-import { env } from "node:process";
-import { addParty } from "../util/portal";
+import * as process from "node:process";
 
 import { TwoWayPortal } from "../util/two-way";
 
@@ -25,12 +24,17 @@ import { TwoWayPortal } from "../util/two-way";
  *   7    |   n       |   y       |        |          |test@example.com| Test1@$%^ | test7      | test7     |
  *   8    |   n       |   y       |        |  test2   |                | Test1@$%^ | test7      | test7     |
  */
-let url: string = env.URL || "https://plab08.i-sightlab.com/portal";
-const route = new URL(url);
-let testerName = route.hostname.split(".")[0] + "test" + Math.floor(Math.random() * 1000);
+// let url: string = env.URL || "https://plab08.i-sightlab.com/portal";
+// const route = new URL(url);
+// let testerName = route.hostname.split(".")[0] + "test" + Math.floor(Math.random() * 1000);
 
 const test = base.extend<{ twp: TwoWayPortal }>({
   twp: async ({ page }, use) => {
+
+    let url = process.env.URL || "https://plab08.i-sightlab.com/portal";
+    const pathname = new URL(url).toString();
+    url = url.replace(pathname, "") + "/portal";
+
     const twp = new TwoWayPortal(page, url);
     await twp.pretest();
     await use(twp);
@@ -81,7 +85,7 @@ test.describe(` 2-Way Portal Reporter Test`, () => {
    *  test  | anonymous | returning | update | username | email          | password   | first name | last name |
    *   5    |   n       |   n       |   n    |          |                |            | test5      |  test5    |
    */
-  test("T5: A=N R=N U=N", async ({ twp}) => {
+  test("T5: A=N R=N U=N", async ({ twp }) => {
     await twp.test5();
   });
 
@@ -90,7 +94,7 @@ test.describe(` 2-Way Portal Reporter Test`, () => {
    * | test  | anonymous | returning | update | username | email          | password   | first name | last name |
    * | 6     |   n       |   n       |   y    |          |test@example.com| Test1@$%^ | test6      | test6     |
    */
-  test("T6: A=N R=N U=Y", async ({ twp}) => {
+  test("T6: A=N R=N U=Y", async ({ twp }) => {
     await twp.test6()
   });
   /**
@@ -102,10 +106,7 @@ test.describe(` 2-Way Portal Reporter Test`, () => {
     await twp.test7();
   })
 
-  test("Add Party", async ({ page }) => {
-    await addParty(page);
-  });
-  
+
 
   test.afterEach(async ({ page }, testInfo) => {
     // await screenshotOnFailed(page, testInfo);

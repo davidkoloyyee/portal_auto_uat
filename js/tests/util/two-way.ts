@@ -211,6 +211,8 @@ export class TwoWayPortal {
         select.selectOption({ index: 1 })
       }
     }
+    // addParty(this.#page);
+    // addFile(this.#page);
   }
 
   /**
