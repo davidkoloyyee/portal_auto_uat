@@ -1,15 +1,12 @@
 "use strict";
 
 import { test } from "@playwright/test";
-import { env } from "node:process";
-import { addFile, addParty, fillEmailPW, fillFirstLastName, fillReturnUser, handleSubmit, handleTC } from "../util/portal";
-
+import * as process from "node:process";
 import { EDfn } from "../util/enums";
 import {
-  checkByDfn,
+  addFile, addParty, checkByDfn,
   checkByDfnByValue,
-  emailPwCreate,
-  usernamePwCreate
+  emailPwCreate, fillEmailPW, fillFirstLastName, fillReturnUser, handleSubmit, handleTC, usernamePwCreate
 } from "../util/portal";
 
 // const rl = readline.createInterface({
@@ -43,21 +40,23 @@ import {
  *   7    |   n       |   y       |        |          |test@example.com| Test1@$%^ | test7      | test7     |
  *   8    |   n       |   y       |        |  test2   |                | Test1@$%^ | test7      | test7     |
  */
-let url: string = env.URL || "https://plab08.i-sightlab.com/portal";
-const route = new URL(url);
-let testerName = route.hostname.split(".")[0] + "test" + Math.floor(Math.random() * 1000);
+
 test.describe(` 2-Way Portal Reporter Test`, () => {
+
+  let url = process.env.URL ?? "https://plab08.i-sightlab.com/portal";
+  const pathname = new URL(url).toString();
+  let testerName = new URL(url).hostname.split(".")[0] + "test" + Math.floor(Math.random() * 1000);
+  url = url.replace(pathname, "") + "/login";
 
   const rand = Math.floor(Math.random() * 1000);
   let email = `test${rand}@email.com`;
 
   testerName.replace("@", "");
-  let username = testerName;
-
-  let password = "Test1@$%^";
+  let username = process.env.USER ?? testerName;
+  let password = process.env.PW ?? "Test1@$%^";
 
   // const twoway = TwoWayFn(url);
-  
+
   test.beforeEach(async ({ page }) => {
     if (url.includes("reportonline")) {
       url = url.replace("/reportonline", "");
@@ -231,12 +230,12 @@ test.describe(` 2-Way Portal Reporter Test`, () => {
     await handleSubmit(page);
   })
 
-  test("Add Party", async ({page })=>{
-   await addParty(page);
+  test("Add Party", async ({ page }) => {
+    await addParty(page);
   });
 
-  test("Add File", async ({page })=>{
-   await addFile(page);
+  test("Add File", async ({ page }) => {
+    await addFile(page);
   });
 
 

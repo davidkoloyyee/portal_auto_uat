@@ -9,12 +9,12 @@ import { addParty, fillInput } from "../util/portal";
 
 test.describe("Login as internal user ", () => {
 
-  let url = process.env.URL || "https://plab08.i-sightlab.com/portal";
+  let url = process.env.URL ?? "https://plab08.i-sightlab.com/portal";
   const pathname = new URL(url).toString();
   url = url.replace(pathname, "") + "/login";
 
-  const username = "isight";
-  const password = "#Case2024!!";
+  const username = process.env.USER ?? "isight";
+  const password = process.env.PW ?? "#Case2024!!";
 
   test("add party", async ({ page }) => {
     /**
