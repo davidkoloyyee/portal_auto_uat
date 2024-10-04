@@ -243,7 +243,7 @@ export async function handleSubmit(page: Page) {
 /**
  * Portal add party
  */
-export async function addParty(page: Page, {isPortal = true}) : Promise<number> {
+export async function addParty(page: Page, { isPortal = true }): Promise<number> {
   const btn = page.locator("button[data-display-rule*='displayParty']");
   await btn.click({ clickCount: 10, timeout: 3000 })
 
@@ -290,7 +290,7 @@ export async function addParty(page: Page, {isPortal = true}) : Promise<number> 
       }
       // }
       await page.getByRole("button", { name: "Save" }).click();
-      
+
     }
   } else {
     console.log(page.url())
@@ -304,10 +304,10 @@ export async function addParty(page: Page, {isPortal = true}) : Promise<number> 
     console.log(await page.locator("select").first().click());
     for (const select of await page.locator("select").all()) {
       console.log(await select.allInnerTexts());
-        while ((await select.inputValue()) === "") {
-          const options = await select.locator("option").all();
-          let rand = Math.floor(Math.random() * (options.length - 1)) + 1;
-          await select.selectOption({ index: rand });
+      while ((await select.inputValue()) === "") {
+        const options = await select.locator("option").all();
+        let rand = Math.floor(Math.random() * (options.length - 1)) + 1;
+        await select.selectOption({ index: rand });
       }
     }
 
@@ -327,9 +327,13 @@ export async function addParty(page: Page, {isPortal = true}) : Promise<number> 
       await cb.fill("test@example.com");
       await page.keyboard.press("Tab");
     }
-    await page.locator("button#save").click();
-    await page.locator("button#confirm").click();
-    
+    if(await page.locator("button#save").isVisible()) {
+      await page.locator("button#save").click();
+    }
+    if(await page.locator("button#confirm").isVisible()) {
+      await page.locator("button#confirm").click();
+    }
+
     // need to return the number of trs
     await page.getByRole("table").click();
     rowCount = (await page.locator("tr").all()).length;
@@ -378,4 +382,54 @@ export async function handleCal(page: Page) {
   const cal = await page.locator(EInputNames.calendarDMY).all();
   cal.forEach(async (c) => console.log(await c.getAttribute("aria-label")))
 
+}
+
+
+interface LoginParams {
+  username: string;
+  password: string;
+}
+
+export async function login(page: Page, { username, password }: LoginParams) {
+
+  await fillInput({ page, cssSelector: EInputNames.loginUsername, value: username });
+  await fillInput({ page, cssSelector: EInputNames.loginPassword, value: password });
+  await page.locator("button#login").click();
+
+
+  const dialog = page.locator("div[role='dialog']");
+
+  console.log(await dialog.isVisible());
+  if (await dialog.isVisible()) {
+    await dialog.locator("a.introjs-button").first().click();
+  }
+  return page;
+}
+
+export async function fillAllSelectRand(page: Page) {
+  
+  for (const select of await page.locator("select").all()) {
+    console.log(await select.allInnerTexts());
+    // while ((await select.inputValue()) === "") {
+    const options = await select.locator("option").all();
+    let rand = Math.floor(Math.random() * (options.length - 1)) + 1;
+    await select.selectOption({ index: rand });
+    // }
+  }
+}
+
+export async function fillInputFake(page: Page, url: string) {
+
+  for (const textInput of await page.locator("input[type='text']").all()) {
+    if (await textInput.isVisible()) {
+      textInput.fill(new Date() + " " + url);
+    }
+  }
+}
+
+export async function fillTextboxFake(page: Page, url: string) {
+
+  for (let tb of await page.getByRole("textbox").all()) {
+    await tb.fill(new Date() + " " + url);
+  }
 }

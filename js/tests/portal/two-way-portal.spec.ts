@@ -2,12 +2,12 @@
 
 import { test } from "@playwright/test";
 import * as process from "node:process";
-import { EDfn } from "../util/enums";
 import {
   addFile, addParty, checkByDfn,
   checkByDfnByValue,
   emailPwCreate, fillEmailPW, fillFirstLastName, fillReturnUser, handleSubmit, handleTC, usernamePwCreate
-} from "../util/portal";
+} from "../util/core-fn";
+import { EDfn } from "../util/enums";
 
 // const rl = readline.createInterface({
 //   input: process.stdin,

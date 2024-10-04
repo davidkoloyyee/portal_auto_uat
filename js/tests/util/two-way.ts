@@ -1,16 +1,19 @@
 import { Page } from "@playwright/test";
-import { EDfn } from "./enums";
 import {
   checkByDfn,
   checkByDfnByValue,
   emailPwCreate,
+  fillAllSelectRand,
   fillEmailPW,
   fillFirstLastName,
+  fillInputFake,
   fillReturnUser,
+  fillTextboxFake,
   handleSubmit,
   handleTC,
   usernamePwCreate
-} from "./portal";
+} from "./core-fn";
+import { EDfn } from "./enums";
 /**
  * this is handle common two-way portal. <br>
  *
@@ -189,21 +192,40 @@ export class TwoWayPortal {
     // added special required fields here.
     await handleTC(this.#page, this.#url);
 
-    for (let tb of await this.#page.getByRole("textbox").all()) {
-      await tb.fill(new Date() + " " + this.#url);
+    if (await this.#page.getByRole("textbox").first().isVisible()) {
+    await fillTextboxFake(this.#page, this.#url);
     }
+    // for (let tb of await this.#page.getByRole("textbox").all()) {
+    //   await tb.fill(new Date() + " " + this.#url);
+    // }
 
-    for (const select of await this.#page.locator("select").all()) {
-      if (await select.isVisible()) {
-        select.selectOption({ index: 1 })
-      }
+    // for (const select of await this.#page.locator("select").all()) {
+    //   if (await select.isVisible()) {
+    //     select.selectOption({ index: 1 })
+    //   }
+    // }
+    if (await this.#page.locator("select").first().isVisible()) {
+      await fillAllSelectRand(this.#page);
     }
+    // for (const select of await this.#page.locator("select").all()) {
+    //   console.log(await select.allInnerTexts());
+    //   // while ((await select.inputValue()) === "") {
+    //   const options = await select.locator("option").all();
+    //   let rand = Math.floor(Math.random() * (options.length - 1)) + 1;
+    //   await select.selectOption({ index: rand });
+    //   // }
+    // }
 
-    for (const textInput of await this.#page.locator("input[type='text']").all()) {
-      if (await textInput.isVisible()) {
-        textInput.fill(new Date() + " " + this.#url)
-      }
+
+
+    if (await this.#page.locator("input[type='text']").first().isVisible()) {
+      await fillInputFake(this.#page, this.#url);
     }
+    // for (const textInput of await this.#page.locator("input[type='text']").all()) {
+    //   if (await textInput.isVisible()) {
+    //     textInput.fill(new Date() + " " + this.#url)
+    //   }
+    // }
 
     for (const select of await this.#page.locator("dialog").all()) {
       console.log("I shouldn't see this. ")
@@ -322,10 +344,10 @@ export class TwoWayPortal {
     await checkByDfn(this.#page, EDfn.returning, true);
 
     await fillFirstLastName(this.#page, { firstName: this.#username, lastName: this.#username });
-    await fillReturnUser(this.#page, { dnf: EDfn.loginUsernameEmail, username: this.#email, password: this.#password })
+    await fillReturnUser(this.#page, { dnf: EDfn.loginUsernameEmail, username: "test@example.com", password: this.#password })
   }
 
-  
+
   async submit() {
     await handleSubmit(this.#page);
   }

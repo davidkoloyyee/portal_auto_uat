@@ -32,8 +32,7 @@ const test = base.extend<{ twp: TwoWayPortal }>({
   twp: async ({ page }, use) => {
 
     let url = process.env.URL || "https://plab08.i-sightlab.com/portal";
-    const pathname = new URL(url).toString();
-    url = url.replace(pathname, "") + "/portal";
+    url = new URL(url).origin + "/portal";
 
     const twp = new TwoWayPortal(page, url);
     await twp.pretest();

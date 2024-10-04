@@ -1,7 +1,7 @@
 import test, { expect } from "@playwright/test";
 import { env } from "node:process";
+import { checkByDfn, fillFirstLastName, handleSubmit, handleTC } from "../util/core-fn";
 import { EDfn } from "../util/enums";
-import { checkByDfn, fillFirstLastName, handleSubmit, handleTC } from "../util/portal";
 /**
  * 1 Way Portal
  * ------------------
