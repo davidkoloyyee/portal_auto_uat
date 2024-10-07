@@ -1,4 +1,5 @@
 
+import { chromium } from "@playwright/test";
 import * as readline from 'node:readline';
 
 function prompt() {
@@ -8,16 +9,27 @@ function prompt() {
     output: process.stdout,
   });
 
-  rl.question(`what's url?`, name => {
-    console.log(`Hi ${name}!`);
+  rl.question("what's url?", (name : string)=> {
     url = name;
+    console.log("hello " + url);
     rl.close();
   });
+  return url;
+}
+
+async function runTest() {
+  let url = prompt();
+  console.log("launching chromium");
+  const browser = await chromium.launch();  // Or 'firefox' or 'webkit'.
+  const page = await browser.newPage();
+  await page.goto('https://playwright.dev/');
 }
 
 function main() {
-  let url = prompt();
-  console.log(url);
+
+(async () => {
+  await runTest();
+})();
 }
 
-// main();
+main();

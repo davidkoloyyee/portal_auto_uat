@@ -256,7 +256,7 @@ export async function addParty(page: Page, { isPortal = true }): Promise<number>
     if (await modal.isVisible()) {
       const radios = modal.getByRole("radio");
       // console.log(await radios.first().inputValue());
-      console.log(await (await radios.all()).every(async el => await el.isChecked()));
+      // console.log(await (await radios.all()).every(async el => await el.isChecked()));
       // if (!await radios.first().isChecked()) {
       //   radios.first().check()
       // }
@@ -274,7 +274,7 @@ export async function addParty(page: Page, { isPortal = true }): Promise<number>
       for (const txtInput of await modal.locator("input[type='text']").all()) {
         const className = await txtInput.getAttribute("class");
         if (className === "form-control" && await txtInput.isVisible()) {
-          console.log(await txtInput.getAttribute("name"))
+          // console.log(await txtInput.getAttribute("name"))
           await txtInput.click();
           await txtInput.fill("test@example.com");
           await page.keyboard.press("Tab");
@@ -293,7 +293,7 @@ export async function addParty(page: Page, { isPortal = true }): Promise<number>
 
     }
   } else {
-    console.log(page.url())
+    // console.log(page.url())
     const radios = page.getByRole("radio");
     // console.log(await radios.first().inputValue());
     // console.log(await (await radios.all()).every(async el => await el.isChecked()));
@@ -303,7 +303,7 @@ export async function addParty(page: Page, { isPortal = true }): Promise<number>
 
     console.log(await page.locator("select").first().click());
     for (const select of await page.locator("select").all()) {
-      console.log(await select.allInnerTexts());
+      // console.log(await select.allInnerTexts());
       while ((await select.inputValue()) === "") {
         const options = await select.locator("option").all();
         let rand = Math.floor(Math.random() * (options.length - 1)) + 1;
@@ -314,7 +314,7 @@ export async function addParty(page: Page, { isPortal = true }): Promise<number>
     for (const txtInput of await page.locator("input[type='text']").all()) {
       const className = await txtInput.getAttribute("class");
       if (className === "form-control" && await txtInput.isVisible()) {
-        console.log(await txtInput.getAttribute("name"))
+        // console.log(await txtInput.getAttribute("name"))
         await txtInput.click();
         await txtInput.fill("test@example.com");
         await page.keyboard.press("Tab");
@@ -327,10 +327,10 @@ export async function addParty(page: Page, { isPortal = true }): Promise<number>
       await cb.fill("test@example.com");
       await page.keyboard.press("Tab");
     }
-    if(await page.locator("button#save").isVisible()) {
+    if (await page.locator("button#save").isVisible()) {
       await page.locator("button#save").click();
     }
-    if(await page.locator("button#confirm").isVisible()) {
+    if (await page.locator("button#confirm").isVisible()) {
       await page.locator("button#confirm").click();
     }
 
@@ -367,21 +367,30 @@ export async function addFile(page: Page) {
  * @param {TestInfo} testInfo  - Playwright TestInfo Object
  */
 export async function screenshotOnFailed(page: Page, testInfo: TestInfo) {
-  console.log(testInfo.status);
-  console.log(testInfo.expectedStatus);
+  // console.log(testInfo.status);
+  // console.log(testInfo.expectedStatus);
   if (testInfo.status !== testInfo.expectedStatus) {
 
     const path = testInfo.outputPath(`test-failed.png`)
-    console.log(testInfo.column);
+    // console.log(testInfo.column);
     const body = await page.screenshot({ path: path, timeout: 500 });
     testInfo.attachments.push({ name: "test failed.", path: path, contentType: "image/png", body });
   }
 };
-
+/**
+ * TODO: missing logic.
+ * @param page 
+ */
 export async function handleCal(page: Page) {
   const cal = await page.locator(EInputNames.calendarDMY).all();
-  cal.forEach(async (c) => console.log(await c.getAttribute("aria-label")))
-
+  cal.forEach(async (c) => {
+    if (await c.isVisible()) {
+      await c.click();
+      for (const dp of await page.locator("div.datepicker").all()) {
+        await dp.locator("td.today.day").click({clickCount: 2, force: true});
+      }
+    }
+  });
 }
 
 
@@ -396,10 +405,7 @@ export async function login(page: Page, { username, password }: LoginParams) {
   await fillInput({ page, cssSelector: EInputNames.loginPassword, value: password });
   await page.locator("button#login").click();
 
-
   const dialog = page.locator("div[role='dialog']");
-
-  console.log(await dialog.isVisible());
   if (await dialog.isVisible()) {
     await dialog.locator("a.introjs-button").first().click();
   }
@@ -407,21 +413,23 @@ export async function login(page: Page, { username, password }: LoginParams) {
 }
 
 export async function fillAllSelectRand(page: Page) {
-  
+
   for (const select of await page.locator("select").all()) {
-    console.log(await select.allInnerTexts());
-    // while ((await select.inputValue()) === "") {
-    const options = await select.locator("option").all();
-    let rand = Math.floor(Math.random() * (options.length - 1)) + 1;
-    await select.selectOption({ index: rand });
-    // }
+    if (await select.isVisible()) {
+      const options = await select.locator("option").all();
+      let rand = Math.floor(Math.random() * (options.length - 1)) + 1;
+      await select.selectOption({ index: rand });
+    }
   }
 }
 
 export async function fillInputFake(page: Page, url: string) {
 
   for (const textInput of await page.locator("input[type='text']").all()) {
-    if (await textInput.isVisible()) {
+    const id = await textInput.getAttribute("placeholder");
+    if (id?.includes("DD-MMM-YYYY")) {
+      await handleCal(page);
+    } else if (await textInput.isVisible()) {
       textInput.fill(new Date() + " " + url);
     }
   }

@@ -1,6 +1,6 @@
 import test, { expect } from "@playwright/test";
 import { env } from "node:process";
-import { fillAllSelectRand, fillInputFake, fillTextboxFake, login } from "./util/core-fn";
+import { fillAllSelectRand, fillInputFake, fillTextboxFake, handleCal, login, submit } from "./util/core-fn";
 
 
 test.describe("exploring playwright functions", () => {
@@ -44,7 +44,8 @@ test.describe("exploring playwright functions", () => {
   test("add case", async ({ page }) => {
     await page.waitForTimeout(5000);
 
-    const caseLink = page.locator("a[href='/cases']")
+    const caseLink = page.locator("li[data-navigation='cases']").locator("a[data-route='/cases']")
+    await caseLink.click();
     if (await caseLink.isVisible()) {
       await caseLink.click();
     }
@@ -54,20 +55,29 @@ test.describe("exploring playwright functions", () => {
     const table = page.locator("table");
     const rowCount = (await table.locator("tr").all()).length;
     console.log(rowCount);
-    await page.locator("button[href='/case/new']").click();
+    const newCase = page.locator("button[href='/case/new']")
+    if (await newCase.isVisible()) {
+      newCase.click({ clickCount: 3 });
+    }
 
     // await page.waitForSelector("form");
     await page.waitForTimeout(3000);
 
-    if(await page.locator("select").first().isVisible()){
+    await page.locator("select[id*='caseType']").selectOption({ index: 0 });
+
+    await page.waitForTimeout(1000);
+    if (await page.locator("select").first().isVisible()) {
       await fillAllSelectRand(page);
     }
+    await handleCal(page);
 
-    if(await page.locator("input[type='text']").first().isVisible()){
+    if (await page.locator("input[type='text']").first().isVisible()) {
       await fillInputFake(page, url);
     }
-    if(await page.getByRole("textbox").first().isVisible()){
+    if (await page.getByRole("textbox").first().isVisible()) {
       await fillTextboxFake(page, url);
     }
+
+    await submit(page);
   });
 });
