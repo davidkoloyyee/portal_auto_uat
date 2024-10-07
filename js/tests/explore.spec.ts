@@ -1,6 +1,6 @@
 import test, { expect } from "@playwright/test";
 import { env } from "node:process";
-import { fillAllSelectRand, fillInputFake, fillTextboxFake, handleCal, login, submit } from "./util/core-fn";
+import { fillAllSelectRand, fillInputFake, fillTextboxFake, handleCal, login } from "./util/core-fn";
 
 
 test.describe("exploring playwright functions", () => {
@@ -78,6 +78,10 @@ test.describe("exploring playwright functions", () => {
       await fillTextboxFake(page, url);
     }
 
-    await submit(page);
+    // await handleSubmit(page);
+
+    // const table2 = page.locator("table");
+    // const rowCount2 = (await table2.locator("tr").all()).length;
+    // console.log(rowCount === rowCount2);
   });
 });

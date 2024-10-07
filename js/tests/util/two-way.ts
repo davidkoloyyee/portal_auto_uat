@@ -1,7 +1,7 @@
 import { Page } from "@playwright/test";
 import {
-  checkByDfn,
-  checkByDfnByValue,
+  checkRadioByDfn,
+  checkRadioByDfnByValue,
   emailPwCreate,
   fillAllSelectRand,
   fillEmailPW,
@@ -57,17 +57,17 @@ export function TwoWayFn(url: string) {
    *   1    |   y       |   n       |   n    |          |                |           |            |           |
    */
   async function test1(page: Page) {
-    await checkByDfn(page, EDfn.anon, true);
-    await checkByDfn(page, EDfn.returning, false);
+    await checkRadioByDfn(page, EDfn.anon, true);
+    await checkRadioByDfn(page, EDfn.returning, false);
 
     const provideEmail = await page.locator(`div[data-field-name='${EDfn.provideEmail}']`);
     // await provideEmail.click();
     const provideEmailExists = await provideEmail.isVisible();
     console.log(provideEmailExists);
     if (provideEmailExists) {
-      await checkByDfnByValue(page, EDfn.provideEmail, "No User Create")
+      await checkRadioByDfnByValue(page, EDfn.provideEmail, "No User Create")
     } else {
-      await checkByDfn(page, EDfn.update, false);
+      await checkRadioByDfn(page, EDfn.update, false);
     }
   }
 
@@ -78,11 +78,11 @@ export function TwoWayFn(url: string) {
    */
   async function test2(page: Page) {
     // page = await handleTC(page, url);
-    await checkByDfn(page, EDfn.anon, true);
-    await checkByDfn(page, EDfn.returning, false);
-    await checkByDfn(page, EDfn.update, true);
+    await checkRadioByDfn(page, EDfn.anon, true);
+    await checkRadioByDfn(page, EDfn.returning, false);
+    await checkRadioByDfn(page, EDfn.update, true);
     // select create with username
-    await checkByDfn(page, EDfn.provideEmail, false);
+    await checkRadioByDfn(page, EDfn.provideEmail, false);
 
     await usernamePwCreate(page, username, password);
   }
@@ -91,10 +91,10 @@ export function TwoWayFn(url: string) {
    *   3    |   y       |   n       |   y    |          |test@example.com| Test1@$%^ |            |           |
    */
   async function test3(page: Page) {
-    await checkByDfn(page, EDfn.anon, true);
-    await checkByDfn(page, EDfn.returning, false);
+    await checkRadioByDfn(page, EDfn.anon, true);
+    await checkRadioByDfn(page, EDfn.returning, false);
     // create with email and password
-    await checkByDfn(page, EDfn.update, true);
+    await checkRadioByDfn(page, EDfn.update, true);
     await emailPwCreate(
       page,
       EDfn.provideEmail,
@@ -110,8 +110,8 @@ export function TwoWayFn(url: string) {
    *   4    |   y       |   y       |        |  test2   |                | Test1@$%^ |            |           |
    */
   async function test4(page: Page) {
-    await checkByDfn(page, EDfn.anon, true);
-    await checkByDfn(page, EDfn.returning, true);
+    await checkRadioByDfn(page, EDfn.anon, true);
+    await checkRadioByDfn(page, EDfn.returning, true);
     await fillReturnUser(
       page,
       {
@@ -131,9 +131,9 @@ export function TwoWayFn(url: string) {
    *   5    |   n       |   n       |   n    |          |                |            | test5      |  test5    |
    */
   async function test5(page: Page) {
-    await checkByDfn(page, EDfn.anon, false);
-    await checkByDfn(page, EDfn.returning, false);
-    await checkByDfn(page, EDfn.update, false);
+    await checkRadioByDfn(page, EDfn.anon, false);
+    await checkRadioByDfn(page, EDfn.returning, false);
+    await checkRadioByDfn(page, EDfn.update, false);
     await fillFirstLastName(page, { firstName: username, lastName: username });
 
   }
@@ -144,9 +144,9 @@ export function TwoWayFn(url: string) {
    * | 6     |   n       |   n       |   y    |          |test@example.com| Test1@$%^ | test6      | test6     |
    */
   async function test6(page: Page) {
-    await checkByDfn(page, EDfn.anon, false);
-    await checkByDfn(page, EDfn.returning, false);
-    await checkByDfn(page, EDfn.update, true);
+    await checkRadioByDfn(page, EDfn.anon, false);
+    await checkRadioByDfn(page, EDfn.returning, false);
+    await checkRadioByDfn(page, EDfn.update, true);
 
     await fillFirstLastName(page, { firstName: username, lastName: username });
     await fillEmailPW(page, email, password);
@@ -243,17 +243,17 @@ export class TwoWayPortal {
    *   1    |   y       |   n       |   n    |          |                |           |            |           |
    */
   async test1() {
-    await checkByDfn(this.#page, EDfn.anon, true);
-    await checkByDfn(this.#page, EDfn.returning, false);
+    await checkRadioByDfn(this.#page, EDfn.anon, true);
+    await checkRadioByDfn(this.#page, EDfn.returning, false);
 
     const provideEmail = await this.#page.locator(`div[data-field-name='${EDfn.provideEmail}']`);
     // await provideEmail.click();
     const provideEmailExists = await provideEmail.isVisible();
     console.log(provideEmailExists);
     if (provideEmailExists) {
-      await checkByDfnByValue(this.#page, EDfn.provideEmail, "No User Create")
+      await checkRadioByDfnByValue(this.#page, EDfn.provideEmail, "No User Create")
     } else {
-      await checkByDfn(this.#page, EDfn.update, false);
+      await checkRadioByDfn(this.#page, EDfn.update, false);
     }
   }
 
@@ -264,11 +264,11 @@ export class TwoWayPortal {
    */
   async test2() {
     // this.#page = await handleTC(this.#page, this.#url);
-    await checkByDfn(this.#page, EDfn.anon, true);
-    await checkByDfn(this.#page, EDfn.returning, false);
-    await checkByDfn(this.#page, EDfn.update, true);
+    await checkRadioByDfn(this.#page, EDfn.anon, true);
+    await checkRadioByDfn(this.#page, EDfn.returning, false);
+    await checkRadioByDfn(this.#page, EDfn.update, true);
     // select create with username
-    await checkByDfn(this.#page, EDfn.provideEmail, false);
+    await checkRadioByDfn(this.#page, EDfn.provideEmail, false);
 
     await usernamePwCreate(this.#page, this.#username, this.#password);
   }
@@ -277,10 +277,10 @@ export class TwoWayPortal {
    *   3    |   y       |   n       |   y    |          |test@example.com| Test1@#$%^ |            |           |
    */
   async test3() {
-    await checkByDfn(this.#page, EDfn.anon, true);
-    await checkByDfn(this.#page, EDfn.returning, false);
+    await checkRadioByDfn(this.#page, EDfn.anon, true);
+    await checkRadioByDfn(this.#page, EDfn.returning, false);
     // create with email and password
-    await checkByDfn(this.#page, EDfn.update, true);
+    await checkRadioByDfn(this.#page, EDfn.update, true);
     await emailPwCreate(
       this.#page,
       EDfn.provideEmail,
@@ -296,8 +296,8 @@ export class TwoWayPortal {
    *   4    |   y       |   y       |        |  test2   |                | Test1@#$%^ |            |           |
    */
   async test4() {
-    await checkByDfn(this.#page, EDfn.anon, true);
-    await checkByDfn(this.#page, EDfn.returning, true);
+    await checkRadioByDfn(this.#page, EDfn.anon, true);
+    await checkRadioByDfn(this.#page, EDfn.returning, true);
     await fillReturnUser(
       this.#page,
       {
@@ -317,9 +317,9 @@ export class TwoWayPortal {
    *   5    |   n       |   n       |   n    |          |                |            | test5      |  test5    |
    */
   async test5() {
-    await checkByDfn(this.#page, EDfn.anon, false);
-    await checkByDfn(this.#page, EDfn.returning, false);
-    await checkByDfn(this.#page, EDfn.update, false);
+    await checkRadioByDfn(this.#page, EDfn.anon, false);
+    await checkRadioByDfn(this.#page, EDfn.returning, false);
+    await checkRadioByDfn(this.#page, EDfn.update, false);
     await fillFirstLastName(this.#page, { firstName: this.#username, lastName: this.#username });
 
   }
@@ -330,9 +330,9 @@ export class TwoWayPortal {
    * | 6     |   n       |   n       |   y    |          |test@example.com| Test1@#$%^ | test6      | test6     |
    */
   async test6() {
-    await checkByDfn(this.#page, EDfn.anon, false);
-    await checkByDfn(this.#page, EDfn.returning, false);
-    await checkByDfn(this.#page, EDfn.update, true);
+    await checkRadioByDfn(this.#page, EDfn.anon, false);
+    await checkRadioByDfn(this.#page, EDfn.returning, false);
+    await checkRadioByDfn(this.#page, EDfn.update, true);
 
     await fillFirstLastName(this.#page, { firstName: this.#username, lastName: this.#username });
     await fillEmailPW(this.#page, this.#email, this.#password);
@@ -340,8 +340,8 @@ export class TwoWayPortal {
 
   async test7() {
 
-    await checkByDfn(this.#page, EDfn.anon, false);
-    await checkByDfn(this.#page, EDfn.returning, true);
+    await checkRadioByDfn(this.#page, EDfn.anon, false);
+    await checkRadioByDfn(this.#page, EDfn.returning, true);
 
     await fillFirstLastName(this.#page, { firstName: this.#username, lastName: this.#username });
     await fillReturnUser(this.#page, { dnf: EDfn.loginUsernameEmail, username: "test@example.com", password: this.#password })

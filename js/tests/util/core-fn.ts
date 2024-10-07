@@ -16,7 +16,7 @@ import { EInputNames } from "./enums";
  * @param {EDfn}  dfn - html attribute: data-field-name
  * @param {import("@playwright/test").Page} page
  */
-export async function checkByDfn(page: Page, dfn: string, yesOrNo: boolean) {
+export async function checkRadioByDfn(page: Page, dfn: string, yesOrNo: boolean) {
   const choice = yesOrNo ? "yes" : "no";
   await page
     .locator(`[data-field-name='${dfn}'] input[value='${choice}']`)
@@ -29,7 +29,7 @@ export async function checkByDfn(page: Page, dfn: string, yesOrNo: boolean) {
  * @param { EDfn}  dfn - html attribute: data-field-name
  * @param {import("@playwright/test").Page} page
  */
-export async function checkByDfnByValue(page: Page, dfn: string, value: string) {
+export async function checkRadioByDfnByValue(page: Page, dfn: string, value: string) {
   await page
     .locator(`[data-field-name='${dfn}'] input[value='${value}']`)
     .check();
@@ -90,15 +90,15 @@ export async function captureSubmitMessage(page) {
  * @param {string} password
  */
 export async function emailPwCreate(page: Page, dnf: string, email: string, password: string) {
-  await checkByDfn(page, dnf, true);
+  await checkRadioByDfn(page, dnf, true);
   await fillEmailPW(page, email, password);
 }
 
 export async function fillEmailPW(page: Page, email: string, password: string) {
 
-  await fillInput({ page, cssSelector: EInputNames.idEmailWild, value: email, index: 1 });
-  await fillInput({ page, cssSelector: EInputNames.password, value: password });
-  await fillInput({ page, cssSelector: EInputNames.confirmPassword, value: password });
+  await fillInput(page, { cssSelector: EInputNames.idEmailWild, value: email, index: 1 });
+  await fillInput(page, { cssSelector: EInputNames.password, value: password });
+  await fillInput(page, { cssSelector: EInputNames.confirmPassword, value: password });
 }
 
 /**
@@ -109,9 +109,9 @@ export async function fillEmailPW(page: Page, email: string, password: string) {
  * @param {string} password
  */
 export async function usernamePwCreate(page: Page, username: string, password: string) {
-  await fillInput({ page, cssSelector: EInputNames.username, value: username });
-  await fillInput({ page, cssSelector: EInputNames.password, value: password });
-  await fillInput({ page, cssSelector: EInputNames.confirmPassword, value: password });
+  await fillInput(page, { cssSelector: EInputNames.username, value: username });
+  await fillInput(page, { cssSelector: EInputNames.password, value: password });
+  await fillInput(page, { cssSelector: EInputNames.confirmPassword, value: password });
 }
 
 /**
@@ -132,8 +132,8 @@ export async function fillReturnUser(page: Page, { dnf, username, password }: Fi
   await page.waitForSelector(`[data-field='${dnf}']`);
   // await page.waitForTimeout(1000);
   console.log({ password });
-  await fillInput({ page, cssSelector: EInputNames.returnUsername, value: username });
-  await fillInput({ page, cssSelector: EInputNames.returnPwWild, value: password });
+  await fillInput(page, { cssSelector: EInputNames.returnUsername, value: username });
+  await fillInput(page, { cssSelector: EInputNames.returnPwWild, value: password });
 }
 
 interface FillLoginUserParams {
@@ -142,10 +142,10 @@ interface FillLoginUserParams {
   password: string;
 }
 
-export async function fillLoginUser(page, { username, password }: FillLoginUserParams) {
+export async function fillLoginUser(page: Page, { username, password }: FillLoginUserParams) {
 
-  await fillInput({ page, cssSelector: EInputNames.loginUsername, value: username });
-  await fillInput({ page, cssSelector: EInputNames.loginPassword, value: password });
+  await fillInput(page, { cssSelector: EInputNames.loginUsername, value: username });
+  await fillInput(page, { cssSelector: EInputNames.loginPassword, value: password });
 }
 
 
@@ -179,7 +179,6 @@ export async function fillFirstLastName(page: Page, { firstName, lastName }: Fil
  * @returns {import("@playwright/test").Page}
  */
 interface FillInputParams {
-  page: Page;
   cssSelector: string;
   value: string;
   index?: number;
@@ -193,7 +192,7 @@ interface FillInputParams {
  * @param {number} index - nth child index, start with 0, if there is only 1 target put 0 as argument.
  * @returns {import("@playwright/test").Page}
  */
-export async function fillInput({ page, cssSelector, value, index = 0 }: FillInputParams): Promise<void> {
+export async function fillInput(page: Page, { cssSelector, value, index = 0 }: FillInputParams): Promise<void> {
 
   await page.locator(`input[${cssSelector}]`).nth(index).click();
   await page.keyboard.type(value);
@@ -378,7 +377,10 @@ export async function screenshotOnFailed(page: Page, testInfo: TestInfo) {
   }
 };
 /**
- * TODO: missing logic.
+ * Handle calendar, lookup by placeholder DD-MMM-YYYY mostly found in the Case IQ sites.
+ * handling the datepicker where we will be selecting today, this might be a flakey kind.
+ * 
+ * UNSTABLE
  * @param page 
  */
 export async function handleCal(page: Page) {
@@ -387,7 +389,8 @@ export async function handleCal(page: Page) {
     if (await c.isVisible()) {
       await c.click();
       for (const dp of await page.locator("div.datepicker").all()) {
-        await dp.locator("td.today.day").click({clickCount: 2, force: true});
+        console.log(await dp.locator("td.today.day").allInnerTexts());
+        await dp.locator("td.today.day").click();
       }
     }
   });
@@ -401,8 +404,8 @@ interface LoginParams {
 
 export async function login(page: Page, { username, password }: LoginParams) {
 
-  await fillInput({ page, cssSelector: EInputNames.loginUsername, value: username });
-  await fillInput({ page, cssSelector: EInputNames.loginPassword, value: password });
+  await fillInput(page, { cssSelector: EInputNames.loginUsername, value: username });
+  await fillInput(page, { cssSelector: EInputNames.loginPassword, value: password });
   await page.locator("button#login").click();
 
   const dialog = page.locator("div[role='dialog']");
@@ -426,10 +429,7 @@ export async function fillAllSelectRand(page: Page) {
 export async function fillInputFake(page: Page, url: string) {
 
   for (const textInput of await page.locator("input[type='text']").all()) {
-    const id = await textInput.getAttribute("placeholder");
-    if (id?.includes("DD-MMM-YYYY")) {
-      await handleCal(page);
-    } else if (await textInput.isVisible()) {
+    if (await textInput.isVisible()) {
       textInput.fill(new Date() + " " + url);
     }
   }

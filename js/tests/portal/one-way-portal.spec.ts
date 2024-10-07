@@ -1,6 +1,6 @@
 import test, { expect } from "@playwright/test";
 import { env } from "node:process";
-import { checkByDfn, fillFirstLastName, handleSubmit, handleTC } from "../util/core-fn";
+import { checkRadioByDfn, fillFirstLastName, handleSubmit, handleTC } from "../util/core-fn";
 import { EDfn } from "../util/enums";
 /**
  * 1 Way Portal
@@ -69,7 +69,7 @@ test.describe(`1-Way Portal Reporter Test`, () => {
    */
   test("T1: A=N", async ({ page }) => {
 
-    await checkByDfn(page, EDfn.anon, false);
+    await checkRadioByDfn(page, EDfn.anon, false);
     await fillFirstLastName(page, { firstName: "test", lastName: "1" });
 
     // for (let tb of await page.getByRole("textbox").all()) {
@@ -87,7 +87,7 @@ test.describe(`1-Way Portal Reporter Test`, () => {
    * | 2    | y         |           |                  |          |       |          |            |           |
    */
   test("T2: A=Y", async ({ page }) => {
-    await checkByDfn(page, EDfn.anon, true);
+    await checkRadioByDfn(page, EDfn.anon, true);
     await handleSubmit(page)
   })
 
