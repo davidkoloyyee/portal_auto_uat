@@ -2,12 +2,8 @@
 
 import { test } from "@playwright/test";
 import * as process from "node:process";
-import {
-    addFile, addParty, checkRadioByDfn,
-    checkRadioByDfnByValue,
-    emailPwCreate, fillEmailPW, fillFirstLastName, fillReturnUser, handleSubmit, handleTC, usernamePwCreate
-} from "../util/core-fn";
-import { EDfn } from "../util/enums";
+import { addFile, addParty, checkRadioByDfn, checkRadioByDfnByValue, emailPwCreate, fillEmailPW, fillFirstLastName, fillReturnUser, handleSubmit, handleTC, usernamePwCreate } from "../../src/util/core-fn";
+import { EDfn } from "../../src/util/enums";
 
 // const rl = readline.createInterface({
 //   input: process.stdin,
@@ -231,7 +227,7 @@ test.describe(` 2-Way Portal Reporter Test`, () => {
   })
 
   test("Add Party", async ({ page }) => {
-    await addParty(page);
+    await addParty(page, { isPortal: true });
   });
 
   test("Add File", async ({ page }) => {

@@ -1,6 +1,6 @@
 import test, { expect } from "@playwright/test";
 import { env } from "node:process";
-import { fillAllSelectRand, fillInputFake, fillTextboxFake, handleCal, login } from "./util/core-fn";
+import { addNew, fillAllSelectRand, fillInputFake, fillTextboxFake, handleCal, handleSubmit, login, menuNavigate } from "../src/util/core-fn";
 
 
 test.describe("exploring playwright functions", () => {
@@ -42,24 +42,13 @@ test.describe("exploring playwright functions", () => {
   });
 
   test("add case", async ({ page }) => {
-    await page.waitForTimeout(5000);
-
-    const caseLink = page.locator("li[data-navigation='cases']").locator("a[data-route='/cases']")
-    await caseLink.click();
-    if (await caseLink.isVisible()) {
-      await caseLink.click();
-    }
-
-    await page.waitForTimeout(5000);
+    await menuNavigate(page, { route: 'cases' });
 
     const table = page.locator("table");
     const rowCount = (await table.locator("tr").all()).length;
     console.log(rowCount);
-    const newCase = page.locator("button[href='/case/new']")
-    if (await newCase.isVisible()) {
-      newCase.click({ clickCount: 3 });
-    }
 
+    await addNew(page, { href: "case/new" })
     // await page.waitForSelector("form");
     await page.waitForTimeout(3000);
 
@@ -78,10 +67,39 @@ test.describe("exploring playwright functions", () => {
       await fillTextboxFake(page, url);
     }
 
-    // await handleSubmit(page);
+    await handleSubmit(page);
 
-    // const table2 = page.locator("table");
-    // const rowCount2 = (await table2.locator("tr").all()).length;
-    // console.log(rowCount === rowCount2);
+    const table2 = page.locator("table");
+    const rowCount2 = (await table2.locator("tr").all()).length;
+    console.log(rowCount === rowCount2);
+  });
+
+  test("add todo", async ({ page }) => {
+    await navigate(page, { route: "todos", extra: "to-dos" })
+    const table = page.locator("table");
+    const rowCount = (await table.locator("tr").all()).length;
+
+    await addNew(page, { href: "to-do/new" })
+
+    await page.waitForTimeout(1000);
+    // if (await page.locator("select").first().isVisible()) {
+    await fillAllSelectRand(page);
+    // }
+    await fillInputFake(page, url);
+
+    await handleCal(page);
+
+    // if (await page.locator("input[type='text']").first().isVisible()) {
+    // }
+    // if (await page.getByRole("textbox").first().isVisible()) {
+    await fillTextboxFake(page, url);
+    // }
+
+    // await handleSubmit(page);
+    await page.locator("button#save").click();
+
+    const table2 = page.locator("table");
+    const rowCount2 = (await table2.locator("tr").all()).length;
+    expect(rowCount2).toBeGreaterThan(rowCount);
   });
 });

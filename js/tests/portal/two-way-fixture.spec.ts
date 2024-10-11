@@ -3,7 +3,8 @@
 import { test as base } from "@playwright/test";
 import * as process from "node:process";
 
-import { TwoWayPortal } from "../util/two-way";
+import { TwoWayPortal } from "../../src/util/two-way";
+
 
 /**
  * this is handle common two-way portal. <br>
@@ -28,7 +29,7 @@ import { TwoWayPortal } from "../util/two-way";
 // const route = new URL(url);
 // let testerName = route.hostname.split(".")[0] + "test" + Math.floor(Math.random() * 1000);
 
-const test = base.extend<{ twp: TwoWayPortal }>({
+export const test = base.extend<{ twp: TwoWayPortal }>({
   twp: async ({ page }, use) => {
 
     let url = process.env.URL || "https://plab08.i-sightlab.com/portal";
@@ -40,6 +41,7 @@ const test = base.extend<{ twp: TwoWayPortal }>({
     await twp.submit();
   },
 });
+
 test.describe(` 2-Way Portal Reporter Test`, () => {
 
   /**

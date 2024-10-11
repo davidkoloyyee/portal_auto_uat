@@ -4,7 +4,7 @@
 
 import test, { expect } from "@playwright/test";
 import * as process from "node:process";
-import { addParty, fillAllSelectRand, fillInputFake, fillTextboxFake, login } from "../util/core-fn";
+import { addParty, fillAllSelectRand, fillInputFake, fillTextboxFake, login } from "../../src/util/core-fn";
 
 test.describe("Login as internal user ", () => {
 

@@ -6,8 +6,8 @@
   "scripts": {
     "start": "ts-node ./src/main.ts",
     "cy:open": "cypress open",
-    "pw" : "URL=$URL \n npx playwright test tests/portal/portal.spec.ts",
-    "url" : "URL=$URL \n echo URL=$URL"
+    "pw": "URL=$URL \n npx playwright test tests/portal/portal.spec.ts",
+    "url": "URL=$URL \n echo URL=$URL"
   },
   "keywords": [],
   "author": "",
@@ -17,5 +17,8 @@
     "@types/node": "^22.5.4",
     "cypress": "^13.14.2",
     "typescript": "^5.6.2"
+  },
+  "dependencies": {
+    "readline-sync": "^1.4.10"
   }
 }

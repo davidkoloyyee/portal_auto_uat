@@ -302,11 +302,13 @@ export class TwoWayPortal {
       this.#page,
       {
         dnf: EDfn.loginUsernameEmail,
-        username: this.#username,
+        username: "test@example.com",
         password: this.#password
       }
     );
-
+    /**
+     * TODO: handle failed case and revert back to this.#username
+     */
     // sign in
     await this.#page.locator("button#login").click();
     await this.#page.waitForSelector("p[id='login-success']");
@@ -345,6 +347,7 @@ export class TwoWayPortal {
 
     await fillFirstLastName(this.#page, { firstName: this.#username, lastName: this.#username });
     await fillReturnUser(this.#page, { dnf: EDfn.loginUsernameEmail, username: "test@example.com", password: this.#password })
+    await this.#page.locator("button#login").click();
   }
 
 

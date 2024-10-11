@@ -1,7 +1,7 @@
 import test, { expect } from "@playwright/test";
 import { env } from "node:process";
-import { checkRadioByDfn, fillFirstLastName, handleSubmit, handleTC } from "../util/core-fn";
-import { EDfn } from "../util/enums";
+import { checkRadioByDfn, fillFirstLastName, handleSubmit, handleTC } from "../../src/util/core-fn";
+import { EDfn } from "../../src/util/enums";
 /**
  * 1 Way Portal
  * ------------------

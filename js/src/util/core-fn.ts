@@ -385,17 +385,31 @@ export async function screenshotOnFailed(page: Page, testInfo: TestInfo) {
  */
 export async function handleCal(page: Page) {
   const cal = await page.locator(EInputNames.calendarDMY).all();
+  const d = new Date();
   cal.forEach(async (c) => {
     if (await c.isVisible()) {
       await c.click();
-      for (const dp of await page.locator("div.datepicker").all()) {
-        console.log(await dp.locator("td.today.day").allInnerTexts());
-        await dp.locator("td.today.day").click();
+      for (const dp of await page.locator("div.datepicker-days").all()) {
+        let day = new Intl.DateTimeFormat('en', { day: '2-digit' }).format(d);
+        let month = new Intl.DateTimeFormat('en', { month: 'short' }).format(d);
+        let year = new Intl.DateTimeFormat('en', { year: 'numeric' }).format(d);
+        // await dp.getByRole("cell", { name: today.getDate().toString() }).first().click();
+        // console.log(await dp.locator("td.today.day").allInnerTexts());
+        await dp.locator("td.today").click();
+        // await dp.locator("input[type='text']").fill(`${day}-${month}-${year}`);
       }
     }
   });
 }
 
+export async function handlePhone(page: Page, { phone} :{ phone: string}) {
+  const processedPhone = "(" + phone.substring(0,3) + ")" + phone.substring(3,6) + "-" + phone.substring(6);
+  const phoneInput = page.locator(`input[${EInputNames.phoneNumber}]`);
+  await phoneInput.click();
+  if (await phoneInput.isVisible()) {
+    phoneInput.fill(processedPhone);
+  }
+}
 
 interface LoginParams {
   username: string;
@@ -427,10 +441,14 @@ export async function fillAllSelectRand(page: Page) {
 }
 
 export async function fillInputFake(page: Page, url: string) {
-
   for (const textInput of await page.locator("input[type='text']").all()) {
-    if (await textInput.isVisible()) {
-      textInput.fill(new Date() + " " + url);
+    let exclude = ['due',]
+    if (!exclude.find(async el => el === await textInput.getAttribute("name"))) {
+      if (await textInput.isVisible()) {
+        if (await textInput.inputValue() === "" && await page.locator("input[${EInputNames.phoneNumber}]").inputValue() !== "" ) {
+          textInput.fill(new Date() + " " + url);
+        }
+      }
     }
   }
 }
@@ -440,4 +458,51 @@ export async function fillTextboxFake(page: Page, url: string) {
   for (let tb of await page.getByRole("textbox").all()) {
     await tb.fill(new Date() + " " + url);
   }
+}
+
+export async function menuNavigate(page: Page, { route, extra = "" }: { route: string, extra?: string }) {
+  extra = extra === "" ? route : extra;
+  const link = page.locator(`li[data-navigation='${route}']`).locator(`a[data-route='/${extra}']`)
+  await link.click();
+  if (await link.isVisible()) {
+    await link.click();
+  }
+
+}
+
+/**
+ * 
+ * @param page 
+ * @param param1  - href -> "cases/new" use relative path 
+ */
+export async function addNew(page: Page, { href }: { href: string }) {
+
+  if (href.substring(0, 1) === "/") {
+    href = href.substring(1);
+  }
+
+  await page.waitForTimeout(5000);
+  const addNew = page.locator(`button[href='/${href}']`)
+  await addNew.click();
+  if (await addNew.isVisible()) {
+    addNew.click({ clickCount: 3 });
+  }
+}
+
+export async function checkIntroJs(page: Page) {
+  // introjs
+  const intros = page.getByRole("dialog");
+  do {
+    console.log(await intros.allInnerTexts());
+    const next = intros.getByRole("button", { name: "Next →" });
+    const done = intros.getByRole("button", { name: "Done" });
+    if (await done.isVisible()) {
+      done.click();
+    } else {
+      next.click();
+    }
+    await page.waitForTimeout(3000);
+
+  } while (await intros.isVisible())
+
 }

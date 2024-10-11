@@ -42,4 +42,6 @@ export const EInputNames = Object.freeze({
   returnPwWild: "id*='portalLoginPassword'",
   calendarDMY: "input[placeholder='DD-MMM-YYYY']",
   datepicker: "input[name*='date']",
+  countryCode :"name='countryCode'",
+  phoneNumber: "aria-label='Phone Number'",
 });
