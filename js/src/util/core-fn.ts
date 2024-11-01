@@ -170,7 +170,7 @@ export const fill = {
   }
   ,
   textInput: async (page: Page, input: Locator, value: string) => {
-    await fill.typeNBlur(page, input, value);
+    await fill._typeNBlur(page, input, value);
     expect(await input.inputValue()).toBe(value);
   },
   searchUser: async () => {
@@ -188,17 +188,29 @@ export const fill = {
   phone: async (page: Page, phoneNumberLocator: Locator, code: string, phoneNum: string) => {
 
     const countryCode = phoneNumberLocator.locator("input[name='countryCode']");
-    await fill.typeNBlur(page, countryCode, code);
+    await fill._typeNBlur(page, countryCode, code);
 
     const number = phoneNumberLocator.locator("input[name='number']");
-    await fill.typeNBlur(page, number, phoneNum);
+    await fill._typeNBlur(page, number, phoneNum);
   },
   zipPostalCode: async (page: Page, input: Locator, code: string) => {
-    await fill.typeNBlur(page, input, code);
+    await fill._typeNBlur(page, input, code);
   },
-  calendar: () => { },
+  calendar: async (page: Page, target: Locator) => {
+    // random pick "day" without "disabled"
+    await target.click();
+    const tableBody = await page.locator("div.datepicker-days table.table-condensed tbody").first();
+    const availableDays = await tableBody.locator("xpath=//td[not(contains(@class, 'disabled'))]").all();
 
-  typeNBlur: async (page: Page, input: Locator, value: string) => {
+    const randIdx = Math.floor(Math.random() * availableDays.length);
+    const expected = availableDays[randIdx];
+
+    const dayPicked = await expected.textContent();
+    await availableDays[randIdx].click({force: true});
+    expect(await target.inputValue()).toContain(dayPicked);
+   },
+
+  _typeNBlur: async (page: Page, input: Locator, value: string) => {
 
     await input.click();
     await page.keyboard.type(value);
@@ -344,7 +356,6 @@ export async function fillReturnUser(page: Page, { dnf, username, password }: Fi
 
   await page.waitForSelector(`[data-field='${dnf}']`);
   // await page.waitForTimeout(1000);
-  console.log({ password });
   await fillInput(page, { cssSelector: EInputNames.returnUsername, value: username });
   await fillInput(page, { cssSelector: EInputNames.returnPwWild, value: password });
 }
