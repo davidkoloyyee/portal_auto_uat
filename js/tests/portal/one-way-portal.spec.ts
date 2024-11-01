@@ -13,10 +13,13 @@ import { EDfn } from "../../src/util/enums";
  * | 3    |           | y         |                  |          |       |          |            |           |
  * | 4    |           |           | y                |          |       |          |            |           |
  */
-let url: string = env.URL || "https://plab08.i-sightlab.com/portal";
-const route = new URL(url);
-let testerName = route.hostname.split(".")[0] + "test" + Math.floor(Math.random() * 1000);
 test.describe(`1-Way Portal Reporter Test`, () => {
+
+  let url: string = env.URL || "https://plab08.i-sightlab.com/portal";
+  const route = new URL(url);
+  let testerName = route.hostname.split(".")[0] + "test" + Math.floor(Math.random() * 1000);
+  const pathname = new URL(url).toString();
+  url = url.replace(pathname, "") + "/portal";
 
   const rand = Math.floor(Math.random() * 1000);
   let email = `test${rand}@email.com`;

@@ -1,4 +1,3 @@
-
 import { chromium } from "@playwright/test";
 import * as readlineSync from "readline-sync";
 
@@ -9,12 +8,13 @@ async function runTest() {
   const browser = await chromium.launch({ headless : false});  // Or 'firefox' or 'webkit'.
   const page = await browser.newPage();
   await page.goto(url);
-
+  console.log(await page.title())
   await browser.close();
 }
 
 function main() {
   runTest();
 }
+
 
 main();

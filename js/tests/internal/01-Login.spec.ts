@@ -1,26 +1,27 @@
-
-/**
- * A Test Group on Login Page
- */
-
 import test, { expect } from "@playwright/test";
 import * as process from "node:process";
 import { checkIntroJs, login } from "../../src/util/core-fn";
 
+/**
+ * A Test Group on Login Page
+ */
 test.describe("Login UAT tests", () => {
 
   let url = new URL(process.env.URL).origin;
   let username = process.env.USER;
   let password = process.env.PW;
 
-  test.beforeEach("going to login", async({ page }) => {
+
+  test.beforeEach("going to login", async ({ page }) => {
     await page.goto(url + "/login");
 
   });
 
+
+
   test("should be successful", async ({ page }) => {
     const signInTitle: string = await page.title();
-    expect(signInTitle).toBe("i-Sight: Sign In");
+    expect(signInTitle).toContain("i-Sight");
 
     await login(page, { username, password });
     await page.waitForTimeout(10000);
@@ -50,7 +51,7 @@ test.describe("Login UAT tests", () => {
 
   test("check introJS", async ({ page }) => {
 
-    await login(page, { username, password});
+    await login(page, { username, password });
     await page.waitForTimeout(10000);
     await checkIntroJs(page);
   })

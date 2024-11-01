@@ -27,9 +27,6 @@ test.describe("Settings", () => {
     await menuNavigate(page, { route: 'settings' })
     await addNew(page, { href: "/settings/access/user/new" });
 
-
-
-
     await page.locator("input[role='combobox'][id*='userRoleId']").click();
     await page.locator("div.picklist-selectize-api-component-tmpl").nth(0).locator("div[role='option']").first().click();
     await page.locator("input[id*='email'][role='combobox']").fill("test@example.com")

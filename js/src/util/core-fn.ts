@@ -6,10 +6,223 @@
  *
  */
 
-import { Page, TestInfo } from "@playwright/test";
+import { expect, Locator, Page, TestInfo } from "@playwright/test";
 import * as path from "node:path";
 import * as process from "node:process";
 import { EInputNames } from "./enums";
+
+/**
+ * Processing the url returning as /login or /portal/reportonline
+ */
+
+export function processURL(inputURL: string, { isPortal }: { isPortal: boolean }) {
+  let url = new URL(inputURL).origin;
+  if (isPortal) {
+    return url + "/portal/reportonline";
+  }
+  return url + "/login";
+}
+/**************************************** */
+
+export function handleAddModal(addBtns: Locator[], targetString: string) {
+
+}
+/**
+ * Extract target html tag.
+ * 
+ * NOTE: 
+ * Plural returns Locator[].
+ * Singular return single Locator.
+ * 
+ */
+export const extract = {
+  /** Plural returns Locator[]  */
+
+  /** any input type='text' EXCLUDE combobox, phone, calender */
+  textInputs: async (target: Locator) => {
+    const all = await target.locator("input[type='text']").all();
+    let filtered: Locator[] = [];
+    for (const el of all) {
+      const role = await el.getAttribute("role");
+      const placeholder = await el.getAttribute("placeholder")
+      const ariaLabel = await el.getAttribute("aria-label");
+
+      const excludeLabels = ["phone", "country", "zip", "postal"]
+
+      if (
+        await el.isVisible() &&
+        !role?.includes("combobox") &&
+        !placeholder?.includes("MM/DD/YYYY") &&
+        !excludeLabels.some(label => ariaLabel?.toLowerCase().includes(label))) {
+        filtered.push(el)
+      }
+    }
+    return filtered;
+  },
+  /* selectized inputs are the base of the combobox like search user by email */
+  selectizeds: async (target: Locator) => {
+    const res = await target.locator("[id*='selectized']").all();
+    if (res.length === 0) return [];
+    expect(await res[0].getAttribute("id")).toContain("selectized");
+    return res;
+  },
+  selects: async (target: Locator) => {
+    return await target.locator("select").all();
+  },
+  phones: async (target: Locator) => {
+    const res = await target.locator(".phone-number").all();
+    if (res.length === 0) return [];
+    expect(await res[0].getAttribute("class")).toContain("phone-number")
+    expect(await res[0].locator("input[name='number']").getAttribute("aria-label")).toContain("Phone Number")
+    return res;
+  },
+  calendars: async (target: Locator) => {
+    const res = await target.locator("[placeholder='MM/DD/YYYY']").all();
+    if (res.length === 0) return [];
+    return res;
+  },
+  postalCodes: async (target: Locator) => {
+    const res = await target.locator("[name='zipCodePostalCode']").all();
+    if (res.length === 0) return [];
+    expect((await res[0].getAttribute("aria-label"))?.includes("Postal"));
+    return res;
+  },
+  /** Singular returns Locator[]  */
+
+
+  /** 
+   * Return an opened modal-dialog
+   **/
+  modalDialog: async (page: Page, addBtns: Locator[], target: string) => {
+
+    let addParty: Locator | null = null
+    /**
+     * DO NOT refactor to functional programming, doesn't work with async/await
+     */
+    for (const btn of addBtns) {
+      if ((await btn.textContent())?.toLowerCase().includes(target.toLowerCase())) {
+        addParty = btn;
+      }
+    }
+
+    // here will be the logic for handling different kind of add btns
+    await addParty?.click();
+    await page.waitForSelector("div.modal-dialog");
+
+    // dialog handling 
+    const dialog = page.locator("div.modal-dialog");
+    const header = dialog.locator("div.modal-header");
+    expect((await header.textContent())?.toLowerCase()).toContain(target.toLowerCase());
+    return dialog;
+  },
+
+  /* filter a particular selectized comboxes from the array return the parent and parent's sibling*/
+  selectizedParentSibling: async (target: Locator, idContainStr: string) => {
+    const arr = await extract.selectizeds(target)
+
+    let targetSelectizedInput: Locator | null = null;
+    // parent of our target selectized input
+    let parent: Locator | null = null;
+    // sibling is parent's sibling, and extract 1 layer down to the role='listbox',
+    // if we have correct value in the input, there will be role="option"
+    let siblingListbox: Locator | null = null;
+
+    // has-options is part of the class in a combobox class, which is either a picklist or multi-picklist
+    // for picklist NO has-options
+    // for multi-picklist it has has-options
+    let hasOptions: boolean | undefined = false;
+
+    for (const a of arr) {
+      const id = await a.getAttribute("id");
+      if (id?.includes(idContainStr)) {
+        targetSelectizedInput = a;
+        const parentXPath = `xpath=//input[@id='${id}']/parent::*`;
+        parent = target.locator(parentXPath);
+        hasOptions = (await parent.getAttribute("class"))?.includes("has-options")
+        siblingListbox = target.locator(`${parentXPath}/following-sibling::*`).locator("div[role='listbox']");
+      }
+    }
+    return { parent, targetSelectizedInput, siblingListbox, hasOptions };
+  },
+}
+
+export const fill = {
+  // normally is "yes" or "no", but there could be special cases.
+  radio: async (page: Page, dataFieldName: string, value: string) => {
+    await page
+      .locator(`[data-field-name='${dataFieldName}'] input[value='${value}']`)
+      .check();
+  },
+  checkbox: async (target: Locator, dataFieldName: string, type: string) => {
+    await target
+      .locator(`[data-field-name='${dataFieldName}'] input[type='${type}']`)
+      .check();
+  },
+  select: async (select: Locator) => {
+
+    const options = await select.locator("option").all();
+    if (options.length <= 1) return; // only have <Select>.
+
+    let randIdx = Math.floor(Math.random() * options.length);
+    const opt = options[randIdx]
+    await select.selectOption(await opt.textContent())
+    expect(await select.inputValue()).toBe(await opt.textContent());
+  }
+  ,
+  textInput: async (page: Page, input: Locator, value: string) => {
+    await fill.typeNBlur(page, input, value);
+    expect(await input.inputValue()).toBe(value);
+  },
+  searchUser: async () => {
+
+  },
+  email: async (page: Page, target: Locator, email: string) => {
+
+    const div = await extract.selectizedParentSibling(target, "email");
+    await div.parent?.click();
+    await page.keyboard.type(email)
+    await div.siblingListbox?.locator("div.create").first().click() // add email.
+
+    expect(await div.parent?.innerText()).toContain(email);
+  },
+  phone: async (page: Page, phoneNumberLocator: Locator, code: string, phoneNum: string) => {
+
+    const countryCode = phoneNumberLocator.locator("input[name='countryCode']");
+    await fill.typeNBlur(page, countryCode, code);
+
+    const number = phoneNumberLocator.locator("input[name='number']");
+    await fill.typeNBlur(page, number, phoneNum);
+  },
+  zipPostalCode: async (page: Page, input: Locator, code: string) => {
+    await fill.typeNBlur(page, input, code);
+  },
+  calendar: () => { },
+
+  typeNBlur: async (page: Page, input: Locator, value: string) => {
+
+    await input.click();
+    await page.keyboard.type(value);
+    await input.evaluate(e => e.blur);
+  }
+}
+
+export const click = {
+  byId: async (target: Locator, id: string) => {
+    await target.locator(`button#${id}`).click();
+  },
+  submit: async (target: Locator) => {
+    await target.locator("button#submit").click();
+  },
+  confirm: async (target: Locator) => {
+    await target.locator("button#confirm").click();
+  },
+  save: async (target: Locator) => {
+    await target.locator("button#confirm").click();
+  },
+  cancel: async (target: Locator) => {
+    await target.locator("button#cancel").click();
+  },
+}
 
 /**
  * @param {boolean}  yesOrNo - the html attribute "value=['yes' or 'no']" true is "yes", false is "no";
@@ -199,27 +412,6 @@ export async function fillInput(page: Page, { cssSelector, value, index = 0 }: F
   await page.keyboard.press("Tab");
 }
 
-/**
- *
- * @param {import('@playwright/test').Page} page - playwright Page, everything about interact with the webpage.
- * @param {String} url
- */
-interface HandleTCParams {
-  page: Page;
-  url: string;
-}
-/**
- * Handle v9^ T&C Modal. 
- * @param page - Playwright Page object.
- * @param url - Client's UAT test link.
- * @returns 
- */
-export async function handleTC(page: Page, url: string): Promise<Page> {
-  await page.goto(url);
-  await page.getByRole("link", { name: "Report Online" }).click();
-  await page.getByRole("button", { name: "Accept" }).click();
-  return page;
-}
 
 /**
  * 
@@ -254,11 +446,11 @@ export async function addParty(page: Page, { isPortal = true }): Promise<number>
     await modal.click({ clickCount: 10 });
     if (await modal.isVisible()) {
       const radios = modal.getByRole("radio");
-      // console.log(await radios.first().inputValue());
-      // console.log(await (await radios.all()).every(async el => await el.isChecked()));
-      // if (!await radios.first().isChecked()) {
-      //   radios.first().check()
-      // }
+      console.log(await radios.first().inputValue());
+      console.log(await (await radios.all()).every(async el => await el.isChecked()));
+      if (!await radios.first().isChecked()) {
+        radios.first().check()
+      }
 
       for (const select of await modal.locator("select").all()) {
         if (await select.isVisible()) {
@@ -402,12 +594,22 @@ export async function handleCal(page: Page) {
   });
 }
 
-export async function handlePhone(page: Page, { phone} :{ phone: string}) {
-  const processedPhone = "(" + phone.substring(0,3) + ")" + phone.substring(3,6) + "-" + phone.substring(6);
+export async function handlePhone(page: Page, { phone }: { phone: string }) {
+  const processedPhone = "(" + phone.substring(0, 3) + ")" + phone.substring(3, 6) + "-" + phone.substring(6);
   const phoneInput = page.locator(`input[${EInputNames.phoneNumber}]`);
   await phoneInput.click();
   if (await phoneInput.isVisible()) {
     phoneInput.fill(processedPhone);
+  }
+}
+
+export async function handleSave(page: Page) {
+
+  if (await page.locator("button#save").isVisible()) {
+    await page.locator("button#save").click();
+  }
+  if (await page.locator("button#confirm").isVisible()) {
+    await page.locator("button#confirm").click();
   }
 }
 
@@ -422,43 +624,13 @@ export async function login(page: Page, { username, password }: LoginParams) {
   await fillInput(page, { cssSelector: EInputNames.loginPassword, value: password });
   await page.locator("button#login").click();
 
-  const dialog = page.locator("div[role='dialog']");
-  if (await dialog.isVisible()) {
-    await dialog.locator("a.introjs-button").first().click();
-  }
+  // const dialog = page.locator("div[role='dialog']");
+  // if (await dialog.isVisible()) {
+  //   await dialog.locator("a.introjs-button").first().click();
+  // }
   return page;
 }
 
-export async function fillAllSelectRand(page: Page) {
-
-  for (const select of await page.locator("select").all()) {
-    if (await select.isVisible()) {
-      const options = await select.locator("option").all();
-      let rand = Math.floor(Math.random() * (options.length - 1)) + 1;
-      await select.selectOption({ index: rand });
-    }
-  }
-}
-
-export async function fillInputFake(page: Page, url: string) {
-  for (const textInput of await page.locator("input[type='text']").all()) {
-    let exclude = ['due',]
-    if (!exclude.find(async el => el === await textInput.getAttribute("name"))) {
-      if (await textInput.isVisible()) {
-        if (await textInput.inputValue() === "" && await page.locator("input[${EInputNames.phoneNumber}]").inputValue() !== "" ) {
-          textInput.fill(new Date() + " " + url);
-        }
-      }
-    }
-  }
-}
-
-export async function fillTextboxFake(page: Page, url: string) {
-
-  for (let tb of await page.getByRole("textbox").all()) {
-    await tb.fill(new Date() + " " + url);
-  }
-}
 
 export async function menuNavigate(page: Page, { route, extra = "" }: { route: string, extra?: string }) {
   extra = extra === "" ? route : extra;
@@ -506,3 +678,6 @@ export async function checkIntroJs(page: Page) {
   } while (await intros.isVisible())
 
 }
+
+
+

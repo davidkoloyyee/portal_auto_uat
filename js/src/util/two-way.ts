@@ -3,17 +3,15 @@ import {
   checkRadioByDfn,
   checkRadioByDfnByValue,
   emailPwCreate,
-  fillAllSelectRand,
   fillEmailPW,
   fillFirstLastName,
-  fillInputFake,
   fillReturnUser,
-  fillTextboxFake,
   handleSubmit,
-  handleTC,
   usernamePwCreate
 } from "./core-fn";
 import { EDfn } from "./enums";
+import { fillAllSelectRand, fillInputFake, fillTextboxFake } from "./internal/fillers";
+import { handleTC } from "./portal/core-fn";
 /**
  * this is handle common two-way portal. <br>
  *
